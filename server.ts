@@ -7,6 +7,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
+import { v4 as uuidv4 } from 'uuid';
 
 let firebaseConfig: any = {};
 try {
@@ -126,8 +127,7 @@ async function startServer() {
       const file = bucketObj.file(storagePath);
       
       // Generate a download token
-      const crypto = require('crypto');
-      const downloadToken = crypto.randomUUID();
+      const downloadToken = uuidv4();
       
       await file.save(buffer, {
         metadata: {

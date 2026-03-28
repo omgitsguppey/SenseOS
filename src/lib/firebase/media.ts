@@ -2,6 +2,7 @@ import { auth, db, storage } from './config';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface MediaMetadata {
   id?: string;
@@ -22,7 +23,7 @@ export async function uploadMedia(
   onProgress: (progress: number) => void
 ): Promise<string> {
   try {
-    const mediaId = crypto.randomUUID();
+    const mediaId = uuidv4();
     const path = `users/${userId}/photos/originals/${mediaId}-${file.name}`;
     
     onProgress(0); // Indicate start
