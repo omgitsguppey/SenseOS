@@ -8,7 +8,8 @@ import firebaseConfig from '../../../firebase-applet-config.json';
 // Handles raw event capture, sessionization, dedupe-safe IDs, and privacy-aware filtering.
 
 const SCHEMA_VERSION = '1.0.0';
-const ENVIRONMENT = import.meta.env.MODE === 'production' ? 'prod' : 'dev';
+// @ts-ignore
+const ENVIRONMENT = typeof import.meta.env !== 'undefined' && import.meta.env.MODE === 'production' ? 'prod' : 'dev';
 
 // Generate a session ID once per app load
 const SESSION_ID = crypto.randomUUID();
@@ -16,6 +17,15 @@ const SESSION_ID = crypto.randomUUID();
 // Simple in-memory queue for batching events before sending to Firestore/Analytics
 const eventQueue: SenseEvent[] = [];
 const FLUSH_INTERVAL_MS = 5000;
+
+// Exported for testing only
+export const _getEventQueue = () => {
+  // @ts-ignore
+  const isTest = (typeof process !== 'undefined' && process.env.NODE_ENV === 'test') ||
+                 // @ts-ignore
+                 (typeof import.meta.env !== 'undefined' && import.meta.env.MODE === 'test');
+  return isTest ? eventQueue : [];
+};
 
 export const TrackingEngine = {
   /**
