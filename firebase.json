@@ -19,6 +19,7 @@
     "rules": "firestore.rules"
   },
   "storage": {
+    "target": "main-bucket",
     "rules": "storage.rules"
   }
 }

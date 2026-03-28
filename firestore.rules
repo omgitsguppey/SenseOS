@@ -86,6 +86,19 @@ service cloud.firestore {
               request.resource.data[field].size() <= maxLen);
     }
 
+    function isValidOptionalMap(field) {
+      return !(field in request.resource.data) ||
+             request.resource.data[field] == null ||
+             request.resource.data[field] is map;
+    }
+
+    function isValidOptionalNumber(field) {
+      return !(field in request.resource.data) ||
+             request.resource.data[field] == null ||
+             request.resource.data[field] is number;
+    }
+
+
     // ===============================================================
     // Domain Validators
     // ===============================================================
@@ -160,9 +173,9 @@ service cloud.firestore {
              isValidOptionalString('blurredUrl', 1, 500) &&
              data.status in ['uploaded', 'queued', 'analyzing', 'complete', 'failed', 'moderated', 'archived'] &&
              data.createdAt is timestamp &&
-             (data.analysis == null || data.analysis is map) &&
-             (data.moderation == null || data.moderation is map) &&
-             (data.centsSpent == null || data.centsSpent is number);
+             isValidOptionalMap('analysis') &&
+             isValidOptionalMap('moderation') &&
+             isValidOptionalNumber('centsSpent');
     }
 
     function isValidUserCents(data) {
