@@ -32,7 +32,7 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  const dbId: string = firebaseConfig.firestoreDatabaseId || 'ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44';
+  const dbId: string = firebaseConfig.firestoreDatabaseId || '(default)';
   const db = getFirestore(dbId);
   console.log('Using Firestore Database ID:', dbId);
 
