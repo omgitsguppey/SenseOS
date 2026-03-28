@@ -25,7 +25,6 @@ export async function uploadMedia(
     const mediaId = crypto.randomUUID();
     const path = `users/${userId}/photos/originals/${mediaId}-${file.name}`;
     
-    console.log('Starting direct upload to:', path);
     onProgress(0); // Indicate start
     
     if (!auth.currentUser) {
@@ -48,7 +47,6 @@ export async function uploadMedia(
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            console.log('Upload complete, URL:', downloadURL);
             
             // Save metadata to Firestore
             const docRef = await addDoc(collection(db, 'media'), {
