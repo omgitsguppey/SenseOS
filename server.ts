@@ -96,6 +96,18 @@ async function startServer() {
         ? bucket.replace('.firebasestorage.app', '.appspot.com') 
         : bucket;
         
+      // Security Validation: Ensure the requested bucket matches the configured storageBucket
+      // This prevents arbitrary file access/writes to unapproved buckets.
+      if (firebaseConfig.storageBucket) {
+        const expectedBucket = firebaseConfig.storageBucket.includes('.firebasestorage.app')
+          ? firebaseConfig.storageBucket.replace('.firebasestorage.app', '.appspot.com')
+          : firebaseConfig.storageBucket;
+
+        if (actualBucketName !== expectedBucket) {
+          return res.status(403).json({ error: 'Forbidden: Invalid storage bucket' });
+        }
+      }
+
       const bucketObj = getStorage().bucket(actualBucketName);
       const file = bucketObj.file(storagePath);
       
@@ -127,7 +139,7 @@ async function startServer() {
       res.json({ docId: docRef.id, originalUrl });
     } catch (error: any) {
       console.error('Proxy upload error:', error);
-      res.status(500).json({ error: error.message, stack: error.stack });
+      res.status(500).json({ error: 'An error occurred during upload.' });
     }
   });
 
