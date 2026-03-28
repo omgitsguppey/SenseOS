@@ -52,10 +52,7 @@ async function startServer() {
   // Configure CORS for Firebase Storage bucket
   try {
     if (firebaseConfig.storageBucket) {
-      const actualBucketName = firebaseConfig.storageBucket.includes('.firebasestorage.app') 
-        ? firebaseConfig.storageBucket.replace('.firebasestorage.app', '.appspot.com') 
-        : firebaseConfig.storageBucket;
-      const bucket = getStorage().bucket(actualBucketName);
+      const bucket = getStorage().bucket(firebaseConfig.storageBucket);
       await bucket.setCorsConfiguration([
         {
           origin: ['*'],
@@ -64,7 +61,7 @@ async function startServer() {
           maxAgeSeconds: 3600
         }
       ]);
-      console.log('Successfully configured CORS for storage bucket:', actualBucketName);
+      console.log('Successfully configured CORS for storage bucket:', firebaseConfig.storageBucket);
     }
   } catch (error) {
     console.error('Failed to configure CORS for storage bucket:', error);

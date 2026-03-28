@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.analyzeMedia = exports.processTelemetryEvent = void 0;
+exports.setupCors = exports.analyzeMedia = exports.processTelemetryEvent = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const genai_1 = require("@google/genai");
@@ -96,5 +96,17 @@ exports.analyzeMedia = functions.firestore
         console.error('Analysis failed:', error);
         await snap.ref.update({ status: 'failed' });
     }
+});
+exports.setupCors = functions.https.onRequest(async (req, res) => {
+    const bucket = admin.storage().bucket('gen-lang-client-0938925035.appspot.com');
+    await bucket.setCorsConfiguration([
+        {
+            origin: ['*'],
+            method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+            responseHeader: ['Content-Type', 'Authorization', 'Content-Length', 'User-Agent', 'x-goog-resumable'],
+            maxAgeSeconds: 3600
+        }
+    ]);
+    res.send('CORS configuration applied successfully.');
 });
 //# sourceMappingURL=index.js.map

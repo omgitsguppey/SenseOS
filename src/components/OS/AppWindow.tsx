@@ -30,7 +30,7 @@ export function AppWindow({ appId, onClose }: AppWindowProps) {
         </div>
       ) : appId === 'photos' ? (
         <div className="flex-1 relative overflow-hidden bg-black rounded-t-[32px]">
-          <PhotosApp />
+          <PhotosApp onClose={onClose} />
         </div>
       ) : (
         <>

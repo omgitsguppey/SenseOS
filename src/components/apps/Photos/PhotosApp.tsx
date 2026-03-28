@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Image, Search, Library, Zap, Database, Plus, Loader2, AlertCircle, X } from 'lucide-react';
+import { Image, Search, Library, Zap, Database, Plus, Loader2, AlertCircle, X, ChevronLeft } from 'lucide-react';
 import { useAuthStore } from '../../../store/auth';
 import { uploadMedia, subscribeToMedia, MediaMetadata } from '../../../lib/firebase/media';
 
@@ -27,7 +27,11 @@ const MediaGrid = React.memo(({ media }: { media: MediaMetadata[] }) => (
   </div>
 ));
 
-export function PhotosApp() {
+export interface PhotosAppProps {
+  onClose: () => void;
+}
+
+export function PhotosApp({ onClose }: PhotosAppProps) {
   const [activeTab, setActiveTab] = useState<PhotosTab>('library');
   const [media, setMedia] = useState<MediaMetadata[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +43,10 @@ export function PhotosApp() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = subscribeToMedia(user.uid, (newMedia) => {
       setMedia(newMedia);
       setLoading(false);
@@ -100,6 +107,17 @@ export function PhotosApp() {
 
   return (
     <div className="flex flex-col h-full bg-black text-white">
+      {/* Navigation Header */}
+      <div className="h-14 flex items-center px-2 z-20 shrink-0 sticky top-0 bg-black/80 backdrop-blur-xl">
+        <button 
+          onClick={onClose}
+          className="flex items-center text-blue-500 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg active:opacity-70"
+        >
+          <ChevronLeft className="w-6 h-6 -ml-1" strokeWidth={2.5} />
+          <span className="text-[17px] font-normal tracking-tight">Home</span>
+        </button>
+      </div>
+
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto pb-20">
         <AnimatePresence mode="wait">
@@ -113,17 +131,19 @@ export function PhotosApp() {
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-[28px] font-bold tracking-tight">Library</h2>
-                <label className="bg-white/10 p-2.5 rounded-full cursor-pointer hover:bg-white/20 transition-colors active:scale-95">
-                  <Plus className="w-5 h-5" />
-                  <input 
-                    type="file" 
-                    accept="image/*,video/*" 
-                    multiple 
-                    className="hidden" 
-                    ref={fileInputRef}
-                    onChange={handleFileUpload} 
-                  />
-                </label>
+                {user && (
+                  <label className="bg-white/10 p-2.5 rounded-full cursor-pointer hover:bg-white/20 transition-colors active:scale-95">
+                    <Plus className="w-5 h-5" />
+                    <input 
+                      type="file" 
+                      accept="image/*,video/*" 
+                      multiple 
+                      className="hidden" 
+                      ref={fileInputRef}
+                      onChange={handleFileUpload} 
+                    />
+                  </label>
+                )}
               </div>
               
               {/* Upload Progress */}
@@ -193,21 +213,25 @@ export function PhotosApp() {
                     <Image className="w-8 h-8 text-white/40" />
                   </div>
                   <h3 className="text-lg font-semibold text-white/90 mb-2">
-                    No photos yet
+                    {user ? 'No photos yet' : 'Sign in required'}
                   </h3>
                   <p className="text-sm text-white/50 mb-6 max-w-[240px]">
-                    Upload your first photo or video to get started with your library.
+                    {user 
+                      ? 'Upload your first photo or video to get started with your library.' 
+                      : 'Please return to settings to sign in and view your library.'}
                   </p>
-                  <label className="bg-white text-black px-6 py-2.5 rounded-full font-medium text-sm cursor-pointer hover:bg-white/90 transition-colors active:scale-95">
-                    Upload Media
-                    <input 
-                      type="file" 
-                      accept="image/*,video/*" 
-                      multiple 
-                      className="hidden" 
-                      onChange={handleFileUpload} 
-                    />
-                  </label>
+                  {user && (
+                    <label className="bg-white text-black px-6 py-2.5 rounded-full font-medium text-sm cursor-pointer hover:bg-white/90 transition-colors active:scale-95">
+                      Upload Media
+                      <input 
+                        type="file" 
+                        accept="image/*,video/*" 
+                        multiple 
+                        className="hidden" 
+                        onChange={handleFileUpload} 
+                      />
+                    </label>
+                  )}
                 </div>
               ) : media.length > 0 ? (
                 <MediaGrid media={media} />

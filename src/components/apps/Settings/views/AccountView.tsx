@@ -4,7 +4,7 @@ import { User, Mail, ShieldCheck, LogOut, Trash2, LogIn, Loader2 } from 'lucide-
 import { TrackingEngine } from '../../../../lib/telemetry/engine';
 import { useAuthStore } from '../../../../store/auth';
 import { auth } from '../../../../lib/firebase/config';
-import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { deleteAccount } from '../../../../lib/firebase/users';
 
 export function AccountView() {
@@ -16,13 +16,30 @@ export function AccountView() {
   }, []);
 
   const handleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
     try {
-      const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       TrackingEngine.track('account_action', 'settings', 'account', { action: 'sign_in_success' });
-    } catch (error) {
-      console.error('Sign in failed:', error);
-      TrackingEngine.track('error_action', 'settings', 'account', { error: String(error) });
+    } catch (error: any) {
+      console.warn('Popup blocked or failed, attempting redirect...', error);
+      
+      // If the popup gets blocked by the browser (common in sandboxed iframes or AI studios)
+      // gracefully fallback to the redirect method
+      if (error.code === 'auth/popup-blocked' || error.message?.includes('popup')) {
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectError: any) {
+          console.error('Redirect sign in failed:', redirectError);
+          TrackingEngine.track('error_action', 'settings', 'account', { error: String(redirectError) });
+          alert(`Authentication failed: ${redirectError.message}`);
+        }
+      } else {
+        console.error('Sign in failed:', error);
+        TrackingEngine.track('error_action', 'settings', 'account', { error: String(error) });
+        alert(`Authentication failed: ${error.message}`);
+      }
     }
   };
 
