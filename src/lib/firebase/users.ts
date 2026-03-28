@@ -48,3 +48,26 @@ export async function syncUserDocument(user: any): Promise<UserProfile | null> {
     throw error;
   }
 }
+
+export async function deleteAccount(uid: string): Promise<void> {
+  try {
+    const idToken = await auth.currentUser?.getIdToken();
+    if (!idToken) throw new Error('Not authenticated');
+
+    const projectId = firebaseConfig.projectId;
+
+    const response = await fetch(`/api/users/${uid}?projectId=${projectId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Delete failed: ${await response.text()}`);
+    }
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    throw error;
+  }
+}

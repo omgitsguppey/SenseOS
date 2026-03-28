@@ -143,6 +143,78 @@ async function startServer() {
     }
   });
 
+  // API route to delete user
+  app.delete('/api/users/:uid', async (req, res) => {
+    try {
+      const idToken = req.headers.authorization?.split('Bearer ')[1];
+      const { uid } = req.params;
+      const projectId = req.query.projectId as string;
+
+      if (!idToken || !uid || !projectId) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      // Verify ID token
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+      if (decodedToken.uid !== uid) {
+        return res.status(403).json({ error: 'Unauthorized: User ID mismatch' });
+      }
+
+      console.log(`Starting account deletion for user: ${uid}`);
+
+      // Helper function to delete documents in batches
+      const deleteCollectionInBatches = async (query: FirebaseFirestore.Query) => {
+        const snapshot = await query.get();
+        if (snapshot.empty) return 0;
+
+        let deletedCount = 0;
+        const docs = snapshot.docs;
+
+        // Firestore batch limit is 500
+        for (let i = 0; i < docs.length; i += 500) {
+          const batch = db.batch();
+          const chunk = docs.slice(i, i + 500);
+          chunk.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+          deletedCount += chunk.length;
+        }
+        return deletedCount;
+      };
+
+      // 1. Delete Sense Memory
+      const memoryCount = await deleteCollectionInBatches(db.collection('sense_memory').where('user_id', '==', uid));
+      if (memoryCount > 0) {
+        console.log(`Deleted ${memoryCount} memory documents`);
+      }
+
+      // 2. Delete Media
+      const mediaCount = await deleteCollectionInBatches(db.collection('media').where('userId', '==', uid));
+      if (mediaCount > 0) {
+        console.log(`Deleted ${mediaCount} media documents`);
+      }
+
+      // 3. Delete User Document and Subcollections
+      const userRef = db.collection('users').doc(uid);
+
+      // Delete known subcollection documents
+      await userRef.collection('privacy_consent').doc('current').delete();
+      await userRef.collection('preferences').doc('current').delete();
+
+      // Delete the user document itself
+      await userRef.delete();
+      console.log(`Deleted user document and settings for: ${uid}`);
+
+      // 4. Delete from Firebase Auth
+      await getAuth().deleteUser(uid);
+      console.log(`Deleted user from Firebase Auth: ${uid}`);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Delete user error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // API route to sync user
   app.post('/api/users/sync', async (req, res) => {
     try {
