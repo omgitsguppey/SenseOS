@@ -15,6 +15,7 @@ export function AppIcon({ name, icon: Icon, color, onClick, showLabel = true, ba
   return (
     <div className="flex flex-col items-center justify-start w-[76px] gap-1.5 relative">
       <motion.button
+        aria-label={badge ? `${name}, ${badge} notifications` : name}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.92 }}
         transition={{ type: 'spring', damping: 25, stiffness: 400 }}
@@ -30,13 +31,19 @@ export function AppIcon({ name, icon: Icon, color, onClick, showLabel = true, ba
 
       {/* Badge */}
       {badge !== undefined && badge > 0 && (
-        <div className="absolute top-[-4px] right-[2px] bg-[#FF3B30] text-white text-[13px] font-semibold px-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-[#1C1C1E] shadow-sm z-10 pointer-events-none">
+        <div
+          aria-hidden="true"
+          className="absolute top-[-4px] right-[2px] bg-[#FF3B30] text-white text-[13px] font-semibold px-1.5 min-w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-[#1C1C1E] shadow-sm z-10 pointer-events-none"
+        >
           {badge}
         </div>
       )}
 
       {showLabel && (
-        <span className="text-[11px] font-medium text-white/95 tracking-tight text-center leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-1 w-full px-0.5">
+        <span
+          aria-hidden="true"
+          className="text-[11px] font-medium text-white/95 tracking-tight text-center leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-1 w-full px-0.5"
+        >
           {name}
         </span>
       )}
