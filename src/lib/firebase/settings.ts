@@ -25,15 +25,15 @@ const defaultPreferences: AppPreferences = {
   updatedAt: new Date().toISOString()
 };
 
-export async function syncPrivacyConsent(uid: string): Promise<PrivacyConsent> {
+export async function syncPrivacyConsent(uid: string, idToken?: string): Promise<PrivacyConsent> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/settings/${uid}/privacy?projectId=${projectId}`, {
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -43,7 +43,7 @@ export async function syncPrivacyConsent(uid: string): Promise<PrivacyConsent> {
 
     const data = await response.json();
     if (!data) {
-      await updatePrivacyConsent(uid, defaultConsent);
+      await updatePrivacyConsent(uid, defaultConsent, token);
       return defaultConsent;
     }
     return data as PrivacyConsent;
@@ -53,16 +53,16 @@ export async function syncPrivacyConsent(uid: string): Promise<PrivacyConsent> {
   }
 }
 
-export async function updatePrivacyConsent(uid: string, updates: Partial<PrivacyConsent>): Promise<void> {
+export async function updatePrivacyConsent(uid: string, updates: Partial<PrivacyConsent>, idToken?: string): Promise<void> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/settings/${uid}/privacy`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ updates, projectId })
@@ -77,15 +77,15 @@ export async function updatePrivacyConsent(uid: string, updates: Partial<Privacy
   }
 }
 
-export async function syncAppPreferences(uid: string): Promise<AppPreferences> {
+export async function syncAppPreferences(uid: string, idToken?: string): Promise<AppPreferences> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/settings/${uid}/preferences?projectId=${projectId}`, {
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -95,7 +95,7 @@ export async function syncAppPreferences(uid: string): Promise<AppPreferences> {
 
     const data = await response.json();
     if (!data) {
-      await updateAppPreferences(uid, defaultPreferences);
+      await updateAppPreferences(uid, defaultPreferences, token);
       return defaultPreferences;
     }
     return data as AppPreferences;
@@ -105,16 +105,16 @@ export async function syncAppPreferences(uid: string): Promise<AppPreferences> {
   }
 }
 
-export async function updateAppPreferences(uid: string, updates: Partial<AppPreferences>): Promise<void> {
+export async function updateAppPreferences(uid: string, updates: Partial<AppPreferences>, idToken?: string): Promise<void> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/settings/${uid}/preferences`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ updates, projectId })
