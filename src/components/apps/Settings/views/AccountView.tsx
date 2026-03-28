@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SettingsList, SettingsRow } from '../components/SettingsUI';
-import { User, Mail, ShieldCheck, LogOut, Trash2, LogIn } from 'lucide-react';
+import { User, Mail, ShieldCheck, LogOut, Trash2, LogIn, Loader2 } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/telemetry/engine';
 import { useAuthStore } from '../../../../store/auth';
 import { auth } from '../../../../lib/firebase/config';
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { deleteAccount } from '../../../../lib/firebase/users';
 
 export function AccountView() {
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user, role, isPwaInstalled } = useAuthStore();
 
   useEffect(() => {
@@ -33,9 +35,33 @@ export function AccountView() {
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This action is permanent and will remove all your data, preferences, and content from SenseOS.'
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
     TrackingEngine.track('delete_account_request', 'settings', 'account');
-    // TODO: Implement actual delete flow
+
+    try {
+      await deleteAccount(user.uid);
+      TrackingEngine.track('account_action', 'settings', 'account', { action: 'delete_account_success' });
+      // The auth state will automatically update via AuthProvider/onAuthStateChanged
+      // which will redirect the user away from the authenticated view.
+    } catch (error) {
+      console.error('Delete account failed:', error);
+      TrackingEngine.track('error_action', 'settings', 'account', {
+        error: String(error),
+        action: 'delete_account_failed'
+      });
+      alert('Failed to delete account. Please try again later.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!user) {
@@ -120,11 +146,11 @@ export function AccountView() {
 
       <SettingsList footer="Deleting your account will permanently remove all your data, preferences, and content from SenseOS.">
         <SettingsRow
-          icon={<Trash2 className="w-[20px] h-[20px] text-white" />}
+          icon={isDeleting ? <Loader2 className="w-[20px] h-[20px] text-white animate-spin" /> : <Trash2 className="w-[20px] h-[20px] text-white" />}
           iconBg="bg-[#FF3B30]"
-          label="Delete Account"
+          label={isDeleting ? 'Deleting...' : 'Delete Account'}
           destructive
-          onClick={handleDeleteAccount}
+          onClick={isDeleting ? undefined : handleDeleteAccount}
         />
       </SettingsList>
     </div>
