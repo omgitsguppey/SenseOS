@@ -6,6 +6,27 @@ import { uploadMedia, subscribeToMedia, MediaMetadata } from '../../../lib/fireb
 
 type PhotosTab = 'library' | 'collections' | 'search' | 'utilities' | 'storage';
 
+// ⚡ Bolt Performance Optimization:
+// Memoized MediaGrid prevents the entire photo library from re-rendering
+// during frequent state updates like upload progress ticks.
+// Added loading="lazy" to defer loading off-screen images.
+const MediaGrid = React.memo(({ media }: { media: MediaMetadata[] }) => (
+  <div className="grid grid-cols-3 gap-1">
+    {media.map((item) => (
+      <div key={item.id} className="aspect-square bg-zinc-800 rounded-sm overflow-hidden relative group">
+        <img
+          src={item.originalUrl}
+          alt="Media"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          referrerPolicy="no-referrer"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
+      </div>
+    ))}
+  </div>
+));
+
 export function PhotosApp() {
   const [activeTab, setActiveTab] = useState<PhotosTab>('library');
   const [media, setMedia] = useState<MediaMetadata[]>([]);
@@ -189,19 +210,7 @@ export function PhotosApp() {
                   </label>
                 </div>
               ) : media.length > 0 ? (
-                <div className="grid grid-cols-3 gap-1">
-                  {media.map((item) => (
-                    <div key={item.id} className="aspect-square bg-zinc-800 rounded-sm overflow-hidden relative group">
-                      <img 
-                        src={item.originalUrl} 
-                        alt="Media" 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                        referrerPolicy="no-referrer" 
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors pointer-events-none" />
-                    </div>
-                  ))}
-                </div>
+                <MediaGrid media={media} />
               ) : null}
             </motion.div>
           )}
@@ -226,3 +235,6 @@ export function PhotosApp() {
     </div>
   );
 }
+
+// Added for better React DevTools debugging
+MediaGrid.displayName = 'MediaGrid';
