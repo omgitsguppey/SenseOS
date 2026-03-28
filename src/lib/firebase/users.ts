@@ -12,19 +12,19 @@ export interface UserProfile {
   lastLoginAt: any;
 }
 
-export async function syncUserDocument(user: any): Promise<UserProfile | null> {
+export async function syncUserDocument(user: any, idToken?: string): Promise<UserProfile | null> {
   if (!user) return null;
 
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) return null;
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) return null;
 
     const projectId = firebaseConfig.projectId;
     
     const response = await fetch('/api/users/sync', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({

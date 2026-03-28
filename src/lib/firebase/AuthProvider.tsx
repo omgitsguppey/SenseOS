@@ -17,8 +17,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
+          // Fetch token once for all sync operations
+          const idToken = await firebaseUser.getIdToken();
+
           // Sync user to Firestore and get their role
-          const userProfile = await syncUserDocument(firebaseUser);
+          const userProfile = await syncUserDocument(firebaseUser, idToken);
           setUser(firebaseUser);
           
           if (userProfile?.role) {
@@ -26,10 +29,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             TrackingEngine.track('role_detected', 'auth', 'system', { role: userProfile.role });
           }
 
-          // Fetch preferences and consent
+          // Fetch preferences and consent using the same token
           const [consent, preferences] = await Promise.all([
-            syncPrivacyConsent(firebaseUser.uid),
-            syncAppPreferences(firebaseUser.uid)
+            syncPrivacyConsent(firebaseUser.uid, idToken),
+            syncAppPreferences(firebaseUser.uid, idToken)
           ]);
 
           setConsent(consent);
