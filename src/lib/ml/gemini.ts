@@ -1,0 +1,49 @@
+import { GoogleGenAI } from '@google/genai';
+import { useAuthStore } from '../../store/auth';
+import { TrackingEngine } from '../telemetry/engine';
+
+// Initialize the Gemini client
+// Note: In a production app, you might want to proxy this through a backend
+// to keep the API key completely hidden, but for this preview environment,
+// we use the provided environment variable.
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY });
+
+export const MLService = {
+  /**
+   * Generates a personalized response based on user context and telemetry.
+   */
+  async generatePersonalizedIntelligence(prompt: string, context?: string): Promise<string> {
+    const { privacyConsent, user } = useAuthStore.getState();
+
+    // Privacy check: Ensure personalized intelligence is enabled
+    if (!privacyConsent.mlTrainingEnabled) {
+      throw new Error('Personalized intelligence is disabled in privacy settings.');
+    }
+
+    TrackingEngine.track('ml_inference_start', 'ml_service', 'intelligence');
+
+    try {
+      const systemInstruction = `You are the core intelligence engine of SenseOS. 
+You provide personalized, concise, and helpful responses.
+User Name: ${user?.displayName || 'Anonymous'}
+Context: ${context || 'General OS interaction'}
+`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-preview',
+        contents: prompt,
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        }
+      });
+
+      TrackingEngine.track('ml_inference_success', 'ml_service', 'intelligence');
+      return response.text || 'I was unable to process that request.';
+    } catch (error) {
+      console.error('ML Inference failed:', error);
+      TrackingEngine.track('error_action', 'ml_service', 'intelligence', { error: String(error) });
+      throw error;
+    }
+  }
+};

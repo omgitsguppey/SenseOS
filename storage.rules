@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAdmin() {
+      return request.auth != null &&
+        (
+          (request.auth.token.email == "athenarosiejohnson@gmail.com" && request.auth.token.email_verified == true) ||
+          (
+            firestore.exists(/databases/ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44/documents/users/$(request.auth.uid)) &&
+            firestore.get(/databases/ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44/documents/users/$(request.auth.uid)).data.role == 'admin'
+          )
+        );
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+    
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

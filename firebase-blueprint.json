@@ -1,0 +1,178 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data synced from Firebase Auth",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "role": { "type": "string", "enum": ["admin", "creator", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastLoginAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "createdAt", "lastLoginAt"]
+    },
+    "PrivacyConsent": {
+      "title": "PrivacyConsent",
+      "description": "User consent for telemetry and ML training",
+      "type": "object",
+      "properties": {
+        "telemetryEnabled": { "type": "boolean" },
+        "mlTrainingEnabled": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["telemetryEnabled", "mlTrainingEnabled", "updatedAt"]
+    },
+    "AppPreferences": {
+      "title": "AppPreferences",
+      "description": "OS-level user preferences",
+      "type": "object",
+      "properties": {
+        "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+        "reducedMotion": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["theme", "reducedMotion", "updatedAt"]
+    },
+    "TelemetryRaw": {
+      "title": "TelemetryRaw",
+      "description": "Raw telemetry event data (Ingestion)",
+      "type": "object",
+      "properties": {
+        "event_id": { "type": "string" },
+        "event_name": { "type": "string" },
+        "utc_timestamp": { "type": "string" },
+        "user_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "role": { "type": "string" },
+        "app_module": { "type": "string" },
+        "route": { "type": "string" },
+        "device_platform": { "type": "string" },
+        "pwa_installed_state": { "type": "boolean" },
+        "environment": { "type": "string" },
+        "schema_version": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["event_id", "event_name", "utc_timestamp", "session_id", "role", "app_module", "route", "device_platform", "pwa_installed_state", "environment", "schema_version", "metadata"]
+    },
+    "TelemetryProcessed": {
+      "title": "TelemetryProcessed",
+      "description": "Deduplicated and parsed telemetry (Cloud Functions Output)",
+      "type": "object",
+      "properties": {
+        "event_id": { "type": "string" },
+        "clean_name": { "type": "string" },
+        "user_id": { "type": "string" },
+        "processed_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["event_id", "clean_name", "processed_at"]
+    },
+    "AnalyticsSummary": {
+      "title": "AnalyticsSummary",
+      "description": "Aggregated analytics summaries (Cloud Functions Output)",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "active_users": { "type": "number" },
+        "event_counts": { "type": "object" }
+      },
+      "required": ["date", "active_users", "event_counts"]
+    },
+    "SenseMemory": {
+      "title": "SenseMemory",
+      "description": "Flash Lite memory/anecdote layer for personalized ML",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "anecdote": { "type": "string" },
+        "context_tags": { "type": "array", "items": { "type": "string" } },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "anecdote", "context_tags", "created_at"]
+    },
+    "SenseTraining": {
+      "title": "SenseTraining",
+      "description": "Continuity/training layer for ML models",
+      "type": "object",
+      "properties": {
+        "model_version": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "training", "completed", "failed"] },
+        "metrics": { "type": "object" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["model_version", "status", "created_at"]
+    },
+    "Media": {
+      "title": "Media",
+      "description": "Metadata for photos and videos",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "originalUrl": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "blurredUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["uploaded", "queued", "analyzing", "complete", "failed", "moderated", "archived"] },
+        "analysis": { "type": "object" },
+        "moderation": { "type": "object" },
+        "centsSpent": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "originalUrl", "status", "createdAt"]
+    },
+    "UserCents": {
+      "title": "UserCents",
+      "description": "User credit balance and transactions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "balance": { "type": "number" }
+      },
+      "required": ["userId", "balance"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores user profiles"
+    },
+    "/users/{userId}/privacy_consent/{docId}": {
+      "schema": { "$ref": "#/entities/PrivacyConsent" },
+      "description": "Stores user privacy and consent settings"
+    },
+    "/users/{userId}/preferences/{docId}": {
+      "schema": { "$ref": "#/entities/AppPreferences" },
+      "description": "Stores user app preferences"
+    },
+    "/telemetry_events/{eventId}": {
+      "schema": { "$ref": "#/entities/TelemetryRaw" },
+      "description": "Stores raw telemetry events (Ingestion)"
+    },
+    "/telemetry_processed/{eventId}": {
+      "schema": { "$ref": "#/entities/TelemetryProcessed" },
+      "description": "Stores processed telemetry events"
+    },
+    "/analytics_summaries/{date}": {
+      "schema": { "$ref": "#/entities/AnalyticsSummary" },
+      "description": "Stores daily analytics summaries"
+    },
+    "/sense_memory/{memoryId}": {
+      "schema": { "$ref": "#/entities/SenseMemory" },
+      "description": "Stores user-specific anecdotes and context for ML"
+    },
+    "/sense_training/{trainingId}": {
+      "schema": { "$ref": "#/entities/SenseTraining" },
+      "description": "Stores ML training jobs and metrics"
+    },
+    "/media/{mediaId}": {
+      "schema": { "$ref": "#/entities/Media" },
+      "description": "User media library"
+    },
+    "/users/{userId}/cents": {
+      "schema": { "$ref": "#/entities/UserCents" },
+      "description": "User credit balance"
+    }
+  }
+}

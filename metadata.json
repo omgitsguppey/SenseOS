@@ -1,0 +1,5 @@
+{
+  "name": "SenseOS",
+  "description": "Foundational UI shell for SenseOS, a PWA-first web app designed like a real operating system.",
+  "requestFramePermissions": []
+}
