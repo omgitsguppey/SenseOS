@@ -95,6 +95,20 @@ async function startServer() {
       const actualBucketName = bucket.includes('.firebasestorage.app') 
         ? bucket.replace('.firebasestorage.app', '.appspot.com') 
         : bucket;
+
+      // Validate the bucket name against the project's configured storage bucket
+      const configBucket = firebaseConfig.storageBucket;
+      if (!configBucket) {
+        return res.status(500).json({ error: 'Storage bucket not configured' });
+      }
+
+      const actualConfigBucketName = configBucket.includes('.firebasestorage.app')
+        ? configBucket.replace('.firebasestorage.app', '.appspot.com')
+        : configBucket;
+
+      if (actualBucketName !== actualConfigBucketName) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid storage bucket' });
+      }
         
       // Security Validation: Ensure the requested bucket matches the configured storageBucket
       // This prevents arbitrary file access/writes to unapproved buckets.
