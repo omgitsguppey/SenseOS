@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/auth';
 import { analytics, auth } from '../firebase/config';
 import { logEvent } from 'firebase/analytics';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { v4 as uuidv4 } from 'uuid';
 
 // Layer 1: Tracking Engine
 // Handles raw event capture, sessionization, dedupe-safe IDs, and privacy-aware filtering.
@@ -12,7 +13,7 @@ const SCHEMA_VERSION = '1.0.0';
 const ENVIRONMENT = typeof import.meta.env !== 'undefined' && import.meta.env.MODE === 'production' ? 'prod' : 'dev';
 
 // Generate a session ID once per app load
-const SESSION_ID = crypto.randomUUID();
+const SESSION_ID = uuidv4();
 
 // Simple in-memory queue for batching events before sending to Firestore/Analytics
 const eventQueue: SenseEvent[] = [];
@@ -49,7 +50,7 @@ export const TrackingEngine = {
 
     // 2. Construct Event Payload
     const event: SenseEvent = {
-      event_id: crypto.randomUUID(), // Dedupe-safe ID
+      event_id: uuidv4(), // Dedupe-safe ID
       event_name: eventName,
       utc_timestamp: new Date().toISOString(),
       user_id: user?.uid || null,
