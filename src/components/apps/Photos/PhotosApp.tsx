@@ -11,6 +11,7 @@ export function PhotosApp() {
   const [media, setMedia] = useState<MediaMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [justUploaded, setJustUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<string[]>([]);
   const { user } = useAuthStore();
@@ -32,7 +33,7 @@ export function PhotosApp() {
     setUploading(true);
     setErrors([]);
     
-    const newUploads = Array.from(files).map(f => ({ id: crypto.randomUUID(), file: f }));
+    const newUploads = Array.from(files).map(f => ({ id: Math.random().toString(36).substring(2, 15), file: f }));
     
     // Initialize progress to 0 for all files
     const initialProgress: Record<string, number> = {};
@@ -57,7 +58,9 @@ export function PhotosApp() {
     });
 
     await Promise.all(uploadPromises);
+    setJustUploaded(true);
     setUploading(false);
+    setTimeout(() => setJustUploaded(false), 2000);
     
     // Reset file input so the same file can be selected again
     event.target.value = '';
@@ -163,37 +166,29 @@ export function PhotosApp() {
                   <Loader2 className="w-8 h-8 animate-spin" />
                   <p className="text-sm font-medium">Loading library...</p>
                 </div>
-              ) : media.length === 0 ? (
+              ) : media.length === 0 && !uploading && !justUploaded && Object.keys(uploadProgress).length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center px-6 border-2 border-dashed border-white/10 rounded-3xl bg-white/[0.02] mt-4">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${uploading ? 'bg-blue-500/10' : 'bg-white/5'}`}>
-                    {uploading ? (
-                      <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-                    ) : (
-                      <Image className="w-8 h-8 text-white/40" />
-                    )}
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-white/5">
+                    <Image className="w-8 h-8 text-white/40" />
                   </div>
                   <h3 className="text-lg font-semibold text-white/90 mb-2">
-                    {uploading ? 'Uploading media...' : 'No photos yet'}
+                    No photos yet
                   </h3>
                   <p className="text-sm text-white/50 mb-6 max-w-[240px]">
-                    {uploading 
-                      ? 'Please wait while your files are being uploaded to your library.'
-                      : 'Upload your first photo or video to get started with your library.'}
+                    Upload your first photo or video to get started with your library.
                   </p>
-                  {!uploading && (
-                    <label className="bg-white text-black px-6 py-2.5 rounded-full font-medium text-sm cursor-pointer hover:bg-white/90 transition-colors active:scale-95">
-                      Upload Media
-                      <input 
-                        type="file" 
-                        accept="image/*,video/*" 
-                        multiple 
-                        className="hidden" 
-                        onChange={handleFileUpload} 
-                      />
-                    </label>
-                  )}
+                  <label className="bg-white text-black px-6 py-2.5 rounded-full font-medium text-sm cursor-pointer hover:bg-white/90 transition-colors active:scale-95">
+                    Upload Media
+                    <input 
+                      type="file" 
+                      accept="image/*,video/*" 
+                      multiple 
+                      className="hidden" 
+                      onChange={handleFileUpload} 
+                    />
+                  </label>
                 </div>
-              ) : (
+              ) : media.length > 0 ? (
                 <div className="grid grid-cols-3 gap-1">
                   {media.map((item) => (
                     <div key={item.id} className="aspect-square bg-zinc-800 rounded-sm overflow-hidden relative group">
@@ -207,7 +202,7 @@ export function PhotosApp() {
                     </div>
                   ))}
                 </div>
-              )}
+              ) : null}
             </motion.div>
           )}
         </AnimatePresence>

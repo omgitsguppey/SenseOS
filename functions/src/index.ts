@@ -1,8 +1,10 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { GoogleGenAI } from '@google/genai';
 
 admin.initializeApp();
 const db = admin.firestore();
+const ai = new GoogleGenAI({});
 
 /**
  * Cloud Function to process raw telemetry events into daily summaries.
@@ -75,7 +77,6 @@ export const processTelemetryEvent = functions.firestore
 export const analyzeMedia = functions.firestore
   .document('media/{mediaId}')
   .onCreate(async (snap, context) => {
-    const mediaId = context.params.mediaId;
     const data = snap.data();
 
     if (data.status !== 'uploaded') return;
@@ -88,14 +89,9 @@ export const analyzeMedia = functions.firestore
         model: 'gemini-3.1-flash-lite-preview',
         contents: [
           {
+            role: 'user',
             parts: [
-              { text: 'Analyze this image and provide a caption, tags, and NSFW likelihood (low/medium/high).' },
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: data.originalUrl,
-                },
-              },
+              { text: 'Analyze this image and provide a caption, tags, and NSFW likelihood (low/medium/high). Image URL: ' + data.originalUrl }
             ],
           },
         ],

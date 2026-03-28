@@ -12,7 +12,10 @@ export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Core Services
 export const auth = getAuth(app);
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
-export const storage = getStorage(app);
+const actualBucketName = firebaseConfig.storageBucket.includes('.firebasestorage.app') 
+  ? firebaseConfig.storageBucket.replace('.firebasestorage.app', '.appspot.com') 
+  : firebaseConfig.storageBucket;
+export const storage = getStorage(app, 'gs://' + actualBucketName);
 export const rtdb = getDatabase(app);
 
 // Validate Connection to Firestore
