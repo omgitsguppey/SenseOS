@@ -7,8 +7,8 @@ service firebase.storage {
         (
           (request.auth.token.email == "athenarosiejohnson@gmail.com" && request.auth.token.email_verified == true) ||
           (
-            firestore.exists(/databases/ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44/documents/users/$(request.auth.uid)) &&
-            firestore.get(/databases/ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44/documents/users/$(request.auth.uid)).data.role == 'admin'
+            firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+            firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin'
           )
         );
     }
