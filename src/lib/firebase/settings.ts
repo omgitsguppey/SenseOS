@@ -25,9 +25,25 @@ const defaultPreferences: AppPreferences = {
   updatedAt: new Date().toISOString()
 };
 
+let cachedTokenPromise: Promise<string> | null = null;
+let tokenCacheTimeout: any = null;
+
+async function getAuthToken(): Promise<string | undefined> {
+  if (!auth.currentUser) return undefined;
+  if (cachedTokenPromise) return cachedTokenPromise;
+
+  cachedTokenPromise = auth.currentUser.getIdToken();
+  tokenCacheTimeout = setTimeout(() => {
+    cachedTokenPromise = null;
+    tokenCacheTimeout = null;
+  }, 50); // Brief cache to batch concurrent sync requests
+
+  return cachedTokenPromise;
+}
+
 export async function syncPrivacyConsent(uid: string, idToken?: string): Promise<PrivacyConsent> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -55,7 +71,7 @@ export async function syncPrivacyConsent(uid: string, idToken?: string): Promise
 
 export async function updatePrivacyConsent(uid: string, updates: Partial<PrivacyConsent>, idToken?: string): Promise<void> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -79,7 +95,7 @@ export async function updatePrivacyConsent(uid: string, updates: Partial<Privacy
 
 export async function syncAppPreferences(uid: string, idToken?: string): Promise<AppPreferences> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -107,7 +123,7 @@ export async function syncAppPreferences(uid: string, idToken?: string): Promise
 
 export async function updateAppPreferences(uid: string, updates: Partial<AppPreferences>, idToken?: string): Promise<void> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
