@@ -284,11 +284,6 @@ async function startServer() {
         });
       }
 
-      // Upload to Storage using Admin SDK
-      const actualBucketName = bucket.includes('.firebasestorage.app') 
-        ? bucket.replace('.firebasestorage.app', '.appspot.com') 
-        : bucket;
-
       // Validate the bucket name against the project's configured storage bucket
       const configBucket = firebaseConfig.storageBucket;
       if (!configBucket) {
@@ -299,20 +294,19 @@ async function startServer() {
         ? configBucket.replace('.firebasestorage.app', '.appspot.com')
         : configBucket;
 
-      if (actualBucketName !== actualConfigBucketName) {
-        return res.status(403).json({ error: 'Unauthorized: Invalid storage bucket' });
+      // Ensure the requested bucket is a string
+      if (!bucket || typeof bucket !== 'string') {
+        return res.status(400).json({ error: 'Invalid bucket parameter' });
       }
-        
+
+      const actualBucketName = bucket.includes('.firebasestorage.app')
+        ? bucket.replace('.firebasestorage.app', '.appspot.com')
+        : bucket;
+
       // Security Validation: Ensure the requested bucket matches the configured storageBucket
       // This prevents arbitrary file access/writes to unapproved buckets.
-      if (firebaseConfig.storageBucket) {
-        const expectedBucket = firebaseConfig.storageBucket.includes('.firebasestorage.app')
-          ? firebaseConfig.storageBucket.replace('.firebasestorage.app', '.appspot.com')
-          : firebaseConfig.storageBucket;
-
-        if (actualBucketName !== expectedBucket) {
-          return res.status(403).json({ error: 'Forbidden: Invalid storage bucket' });
-        }
+      if (actualBucketName !== actualConfigBucketName) {
+        return res.status(403).json({ error: 'Unauthorized: Invalid storage bucket' });
       }
 
       const bucketObj = getStorage().bucket(actualBucketName);
