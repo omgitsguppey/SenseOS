@@ -98,13 +98,18 @@ service cloud.firestore {
              request.resource.data[field] is number;
     }
 
+    function isValidOptionalBool(field) {
+      return !(field in request.resource.data) ||
+             request.resource.data[field] == null ||
+             request.resource.data[field] is bool;
+    }
 
     // ===============================================================
     // Domain Validators
     // ===============================================================
 
     function isValidUser(data) {
-      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'createdAt', 'lastLoginAt'];
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'role', 'storageQuotaBytes', 'createdAt', 'lastLoginAt'];
       return hasOnlyAllowedFields(allowedFields) &&
              hasRequiredFields(['uid', 'role', 'createdAt', 'lastLoginAt']) &&
              data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
@@ -112,6 +117,7 @@ service cloud.firestore {
              isValidOptionalString('displayName', 1, 100) &&
              isValidOptionalString('photoURL', 1, 500) &&
              data.role in ['admin', 'creator', 'user'] &&
+             isValidOptionalNumber('storageQuotaBytes') &&
              data.createdAt is timestamp &&
              data.lastLoginAt is timestamp;
     }
@@ -164,7 +170,7 @@ service cloud.firestore {
     }
 
     function isValidMedia(data) {
-      let allowedFields = ['userId', 'originalUrl', 'thumbnailUrl', 'blurredUrl', 'status', 'analysis', 'moderation', 'centsSpent', 'createdAt'];
+      let allowedFields = ['userId', 'originalUrl', 'thumbnailUrl', 'blurredUrl', 'status', 'analysis', 'moderation', 'centsSpent', 'createdAt', 'isFavorite', 'sizeBytes'];
       return hasOnlyAllowedFields(allowedFields) &&
              hasRequiredFields(['userId', 'originalUrl', 'status', 'createdAt']) &&
              data.userId is string && data.userId.size() > 0 &&
@@ -175,7 +181,9 @@ service cloud.firestore {
              data.createdAt is timestamp &&
              isValidOptionalMap('analysis') &&
              isValidOptionalMap('moderation') &&
-             isValidOptionalNumber('centsSpent');
+             isValidOptionalNumber('centsSpent') &&
+             isValidOptionalBool('isFavorite') &&
+             isValidOptionalNumber('sizeBytes');
     }
 
     function isValidUserCents(data) {

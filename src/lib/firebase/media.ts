@@ -10,19 +10,22 @@ export interface MediaMetadata {
   originalUrl: string;
   thumbnailUrl?: string;
   blurredUrl?: string;
+  sizeBytes?: number;
   status: 'uploaded' | 'queued' | 'analyzing' | 'complete' | 'failed' | 'moderated' | 'archived';
   analysis?: Record<string, any>;
   moderation?: Record<string, any>;
   centsSpent?: number;
+  isFavorite?: boolean;
   createdAt: any;
 }
 
 export async function uploadMedia(
   userId: string, 
   file: File, 
-  onProgress: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  analysis?: Record<string, number>
 ): Promise<string> {
-  onProgress(10); // Initialize conversion
+  if (onProgress) onProgress(10); // Initialize conversion
   
   if (!auth.currentUser) {
     throw new Error("User is not authenticated");
@@ -37,10 +40,10 @@ export async function uploadMedia(
 
   try {
     const fileData = await toBase64(file);
-    onProgress(30);
+    if (onProgress) onProgress(30);
 
     const uploadMediaFunction = httpsCallable(functions, 'uploadMediaFunction');
-    onProgress(50); // Inform UI that request is en route
+    if (onProgress) onProgress(50); // Inform UI that request is en route
     
     const result = await uploadMediaFunction({
       fileName: file.name,
@@ -70,7 +73,11 @@ export function subscribeToMedia(userId: string, callback: (media: MediaMetadata
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const mediaList: MediaMetadata[] = [];
     snapshot.forEach((doc) => {
-      mediaList.push({ id: doc.id, ...doc.data() } as MediaMetadata);
+      const data = doc.data();
+      // Only inject files that possess the generated Auth Token (v2 pipeline)
+      if (data.originalUrl && data.originalUrl.includes('token=')) {
+        mediaList.push({ id: doc.id, ...data } as MediaMetadata);
+      }
     });
     
     // Sort on client side to avoid requiring a composite index in Firestore
@@ -86,4 +93,28 @@ export function subscribeToMedia(userId: string, callback: (media: MediaMetadata
   });
 
   return unsubscribe;
+}
+
+export async function deleteMediaDocument(mediaId: string): Promise<void> {
+  if (!auth.currentUser) throw new Error("Not authenticated");
+  try {
+    const { doc, deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'media', mediaId));
+  } catch (err) {
+    console.error("Failed to delete media document", err);
+    throw err;
+  }
+}
+
+export async function toggleFavoriteStatus(mediaId: string, currentStatus: boolean): Promise<void> {
+  if (!auth.currentUser) throw new Error("Not authenticated");
+  try {
+    const { doc, updateDoc } = await import('firebase/firestore');
+    await updateDoc(doc(db, 'media', mediaId), {
+      isFavorite: !currentStatus
+    });
+  } catch (err) {
+    console.error("Failed to toggle favorite status", err);
+    throw err;
+  }
 }

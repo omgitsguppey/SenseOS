@@ -4,40 +4,49 @@ import { ChevronLeft } from 'lucide-react';
 import { apps } from '../../data/apps';
 import { SettingsApp } from '../apps/Settings/SettingsApp';
 import { PhotosApp } from '../apps/Photos/PhotosApp';
+import { Process, useOSStore } from '../../store/os';
 
 interface AppWindowProps {
   key?: React.Key;
-  appId: string;
-  onClose: () => void;
+  process: Process;
 }
 
-export function AppWindow({ appId, onClose }: AppWindowProps) {
-  const app = apps.find(a => a.id === appId);
+export function AppWindow({ process }: AppWindowProps) {
+  const { backgroundApp } = useOSStore();
+  const app = apps.find(a => a.id === process.appId);
 
   if (!app) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      animate={{ 
+        opacity: process.status === 'foreground' ? 1 : 0, 
+        scale: process.status === 'foreground' ? 1 : 0.95, 
+        y: process.status === 'foreground' ? 0 : 20 
+      }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ type: 'spring', damping: 28, stiffness: 300, mass: 0.9 }}
-      className="absolute inset-0 z-30 bg-black flex flex-col pt-12"
+      style={{ 
+        zIndex: process.zIndex, 
+        pointerEvents: process.status === 'foreground' ? 'auto' : 'none' 
+      }}
+      className="absolute inset-0 bg-black flex flex-col pt-12"
     >
-      {appId === 'settings' ? (
+      {process.appId === 'settings' ? (
         <div className="flex-1 relative overflow-hidden bg-black rounded-t-[32px]">
-          <SettingsApp onClose={onClose} />
+          <SettingsApp onClose={() => backgroundApp(process.pid)} />
         </div>
-      ) : appId === 'photos' ? (
+      ) : process.appId === 'photos' ? (
         <div className="flex-1 relative overflow-hidden bg-black rounded-t-[32px]">
-          <PhotosApp onClose={onClose} />
+          <PhotosApp onClose={() => backgroundApp(process.pid)} />
         </div>
       ) : (
         <>
           {/* App Header / Top Navigation */}
           <div className="h-14 flex items-center px-2 border-b border-white/10 bg-black/80 backdrop-blur-2xl z-10 rounded-t-[32px]">
             <button 
-              onClick={onClose}
+              onClick={() => backgroundApp(process.pid)}
               className="flex items-center text-blue-500 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg active:opacity-70"
             >
               <ChevronLeft className="w-6 h-6 -ml-1" strokeWidth={2.5} />

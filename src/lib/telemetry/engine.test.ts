@@ -22,7 +22,7 @@ test('TrackingEngine Privacy Filtering', async (t) => {
     _getEventQueue().length = 0;
 
     // Set default return value
-    getStateMock.mock.mockImplementation(() => defaultState);
+    getStateMock.mock.mockImplementation(() => (defaultState as any));
   });
 
   await t.test('should track normal events when telemetry is enabled', () => {
@@ -38,7 +38,7 @@ test('TrackingEngine Privacy Filtering', async (t) => {
     getStateMock.mock.mockImplementation(() => ({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any));
 
     TrackingEngine.track('settings_open', 'settings', '/settings');
 
@@ -51,7 +51,7 @@ test('TrackingEngine Privacy Filtering', async (t) => {
     getStateMock.mock.mockImplementation(() => ({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any));
 
     TrackingEngine.track('error_render', 'system', '/any');
 
@@ -65,7 +65,7 @@ test('TrackingEngine Privacy Filtering', async (t) => {
     getStateMock.mock.mockImplementation(() => ({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any));
 
     const criticalEvents = ['consent_updated', 'error_render', 'error_action'];
 

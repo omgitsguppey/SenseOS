@@ -139,3 +139,27 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'creator
     throw error;
   }
 }
+
+export async function updateUserQuota(userId: string, storageQuotaBytes: number): Promise<void> {
+  try {
+    const idToken = await auth.currentUser?.getIdToken();
+    if (!idToken) throw new Error('Not authenticated');
+
+    const projectId = firebaseConfig.projectId;
+    const response = await fetch(`/api/admin/users/${userId}/quota`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ storageQuotaBytes, projectId })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update quota: ${await response.text()}`);
+    }
+  } catch (error) {
+    console.error('Error updating user quota:', error);
+    throw error;
+  }
+}

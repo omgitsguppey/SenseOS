@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import fs from 'fs';
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, AggregateField } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
@@ -73,7 +73,7 @@ async function startServer() {
   // API route to proxy Firebase Storage uploads and bypass CORS
   app.post('/api/upload', async (req, res) => {
     try {
-      const { path: storagePath, bucket, idToken, contentType, dataUrl, userId, projectId } = req.body;
+      const { path: storagePath, bucket, idToken, contentType, dataUrl, userId, projectId, analysis } = req.body;
       
       if (!dataUrl || !dataUrl.includes(',')) {
         return res.status(400).json({ error: 'Invalid dataUrl' });
@@ -87,6 +87,31 @@ async function startServer() {
       const decodedToken = await getAuth().verifyIdToken(idToken);
       if (decodedToken.uid !== userId) {
         return res.status(403).json({ error: 'Unauthorized: User ID mismatch' });
+      }
+
+      const sizeBytes = buffer.length;
+
+      // Phase 5 Quota Enforcement Hook
+      // Grab User Quota constraints
+      const userRefX = db.collection('users').doc(userId);
+      const userSnap = await userRefX.get();
+      const userData = userSnap.data() || {};
+      const DEFAULT_QUOTA = 5 * 1024 * 1024 * 1024; // 5 GB hard limit
+      const activeQuota = userData.storageQuotaBytes || DEFAULT_QUOTA;
+
+      // Compute historically uploaded footprint using Server Aggregations to prevent document-read explosions
+      const aggregateQuery = db.collection('media').where('userId', '==', userId);
+      const aggregateSnapshot = await aggregateQuery.aggregate({ totalBytes: AggregateField.sum('sizeBytes') }).get();
+      const currentUsed = aggregateSnapshot.data().totalBytes || 0;
+
+      if (currentUsed + sizeBytes > activeQuota) {
+        return res.status(403).json({ 
+          error: 'Storage quota exceeded', 
+          code: 'quota_exceeded',
+          currentUsed,
+          quota: activeQuota,
+          attemptedBytes: sizeBytes
+        });
       }
 
       // Upload to Storage using Admin SDK
@@ -143,6 +168,8 @@ async function startServer() {
       const docRef = await db.collection('media').add({
         userId: userId,
         originalUrl: originalUrl,
+        sizeBytes: sizeBytes,
+        analysis: analysis || {}, // Apple iOS Semantic Tags
         status: 'uploaded',
         createdAt: FieldValue.serverTimestamp()
       });
@@ -222,6 +249,54 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Delete user error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // API route to modify user storage quotas (Phase 5 Admin Control)
+  app.post('/api/admin/users/:uid/quota', async (req, res) => {
+    try {
+      const idToken = req.headers.authorization?.split('Bearer ')[1];
+      const { uid } = req.params;
+      const { storageQuotaBytes, projectId } = req.body;
+
+      if (!idToken || !uid || storageQuotaBytes === undefined || !projectId) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      // Verify ID token natively
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+
+      // Verify Administrative Rights loosely via backend validation bounce
+      // (Trusting that the UI only showed this if they had Admin credentials)
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+        return res.status(403).json({ error: 'Unauthorized: Must be an Admin to modify quotas.' });
+      }
+
+      const dbPath = dbId === '(default)' ? '(default)' : dbId;
+      const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbPath}/documents/users/${uid}?updateMask.fieldPaths=storageQuotaBytes`;
+
+      const response = await fetch(firestoreUrl, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fields: {
+            storageQuotaBytes: { doubleValue: Number(storageQuotaBytes) }
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update quota: ${await response.text()}`);
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Update quota error:', error);
       res.status(500).json({ error: error.message });
     }
   });

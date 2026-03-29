@@ -113,14 +113,32 @@ export const analyzeMedia = functions.firestore
 
       await snap.ref.update({
         status: 'complete',
-        analysis: {
-          result: response.text,
-          processedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
+        'analysis.geminiResult': response.text || '',
+        'analysis.processedAt': admin.firestore.FieldValue.serverTimestamp(),
       });
     } catch (error) {
       console.error('Analysis failed:', error);
       await snap.ref.update({ status: 'failed' });
+    }
+  });
+
+export const handleMediaDeletion = functions.firestore
+  .document('media/{mediaId}')
+  .onDelete(async (snap, context) => {
+    const data = snap.data();
+    if (!data.originalUrl) return;
+
+    try {
+      const url = new URL(data.originalUrl);
+      const pathParts = url.pathname.split('/o/');
+      if (pathParts.length === 2) {
+        const filePath = decodeURIComponent(pathParts[1]);
+        const bucket = getStorage().bucket(firebaseConfig.storageBucket);
+        await bucket.file(filePath).delete();
+        console.log(`Successfully deleted storage artifact: ${filePath}`);
+      }
+    } catch (err) {
+      console.error("Failed to prune storage fragment", err);
     }
   });
 

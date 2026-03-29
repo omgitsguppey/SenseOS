@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SettingsList, SettingsRow } from '../components/SettingsUI';
 import { Users, Activity, DownloadCloud, AlertTriangle, Server, Database } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/telemetry/engine';
-import { subscribeToTelemetryEvents, TelemetryEvent, subscribeToUsers, updateUserRole } from '../../../../lib/firebase/admin';
+import { subscribeToTelemetryEvents, TelemetryEvent, subscribeToUsers, updateUserRole, updateUserQuota } from '../../../../lib/firebase/admin';
 import { UserProfile } from '../../../../lib/firebase/users';
 import { useAuthStore } from '../../../../store/auth';
 
@@ -11,6 +11,7 @@ export function AdminView() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+  const [updatingQuota, setUpdatingQuota] = useState<string | null>(null);
 
   useEffect(() => {
     TrackingEngine.track('admin_panel_view', 'settings', 'admin');
@@ -48,6 +49,19 @@ export function AdminView() {
       console.error('Failed to update role:', error);
     } finally {
       setUpdatingRole(null);
+    }
+  };
+
+  const handleQuotaChange = async (userId: string, newQuotaGB: number) => {
+    setUpdatingQuota(userId);
+    try {
+      // Input is explicitly GB, map back to generic Bytes for backend calculus
+      const rawBytes = newQuotaGB * 1024 * 1024 * 1024;
+      await updateUserQuota(userId, rawBytes);
+    } catch (err) {
+      console.error('Failed to update capacity schema', err);
+    } finally {
+      setUpdatingQuota(null);
     }
   };
 
@@ -113,17 +127,32 @@ export function AdminView() {
                   <div className="text-[13px] text-white/50 truncate">{u.email || u.uid}</div>
                 </div>
               </div>
-              <div className="ml-4 flex-shrink-0">
-                <select
-                  value={u.role}
-                  onChange={(e) => handleRoleChange(u.uid, e.target.value as any)}
-                  disabled={updatingRole === u.uid}
-                  className="bg-[#2C2C2E] text-white text-[13px] font-medium px-3 py-1.5 rounded-lg outline-none disabled:opacity-50"
-                >
-                  <option value="user">User</option>
-                  <option value="creator">Creator</option>
-                  <option value="admin">Admin</option>
-                </select>
+              <div className="ml-4 flex items-center space-x-3 flex-shrink-0">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider mb-1">Quota (GB)</span>
+                  <input 
+                    type="number"
+                    min="1"
+                    disabled={updatingQuota === u.uid}
+                    defaultValue={u.storageQuotaBytes ? Math.round(u.storageQuotaBytes / (1024*1024*1024)) : 5}
+                    onBlur={(e) => handleQuotaChange(u.uid, Number(e.target.value))}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleQuotaChange(u.uid, Number(e.currentTarget.value)) }}
+                    className="bg-[#2C2C2E] w-16 text-center text-white text-[13px] font-medium px-2 py-1.5 rounded-lg outline-none disabled:opacity-50"
+                  />
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] text-white/40 uppercase font-bold tracking-wider mb-1">Role</span>
+                  <select
+                    value={u.role}
+                    onChange={(e) => handleRoleChange(u.uid, e.target.value as any)}
+                    disabled={updatingRole === u.uid}
+                    className="bg-[#2C2C2E] text-white text-[13px] font-medium px-3 py-1.5 rounded-lg outline-none disabled:opacity-50"
+                  >
+                    <option value="user">User</option>
+                    <option value="creator">Creator</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
               </div>
             </div>
           ))
