@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { Dock } from './Dock';
 import { apps, dockApps } from '../../data/apps';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, PanInfo } from 'motion/react';
 
 interface HomeScreenProps {
   key?: React.Key;
@@ -29,7 +29,7 @@ export function HomeScreen({ onLaunchApp }: HomeScreenProps) {
     if (swipeTimeout.current) clearTimeout(swipeTimeout.current);
   };
 
-  const handleDragEnd = (event: any, info: any) => {
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const offset = info.offset.x;
     const velocity = info.velocity.x;
     
