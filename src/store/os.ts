@@ -92,9 +92,11 @@ export const useOSStore = create<OSState>((set, get) => ({
         console.log(`[OS Kernel] RAM Watchdog terminated ${swept} stale background processes.`);
         // Phase 10: Hardware Memory Profiling natively ingested by MetricKit
         MetricKit.logDiagnostic('gc_sweep', { processesCleared: swept });
+        return { processes: survivingProcesses };
       }
 
-      return { processes: survivingProcesses };
+      // ⚡ Bolt: Prevent unnecessary re-renders when GC removes nothing
+      return state;
     });
   },
 
