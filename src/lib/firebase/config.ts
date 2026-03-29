@@ -31,7 +31,7 @@ async function testConnection() {
     // Skip logging for other errors, as this is simply a connection test.
   }
 }
-testConnection();
+if (process.env.NODE_ENV !== 'test') testConnection();
 
 // Analytics (Layer A: Tracking Engine Foundation)
 // Only initialize if supported in the current environment (e.g., browser)
