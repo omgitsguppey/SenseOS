@@ -5,6 +5,7 @@ import { apps } from '../../data/apps';
 import { SettingsApp } from '../apps/Settings/SettingsApp';
 import { PhotosApp } from '../apps/Photos/PhotosApp';
 import { Process, useOSStore } from '../../store/os';
+import { Biome } from '../../lib/os/Biome';
 
 interface AppWindowProps {
   key?: React.Key;
@@ -14,6 +15,15 @@ interface AppWindowProps {
 export function AppWindow({ process }: AppWindowProps) {
   const { backgroundApp } = useOSStore();
   const app = apps.find(a => a.id === process.appId);
+
+  // Phase 10: Biome AI Inter-App Stream Integration
+  React.useEffect(() => {
+    if (process.status === 'foreground') {
+      Biome.publish('AppLaunchStream', process.appId, { zIndex: process.zIndex });
+    } else {
+      Biome.publish('AppFocusStream', process.appId, { action: 'minimized' });
+    }
+  }, [process.status, process.appId, process.zIndex]);
 
   if (!app) return null;
 

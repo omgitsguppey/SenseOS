@@ -4,7 +4,7 @@ import { auth } from './config';
 import { useAuthStore } from '../../store/auth';
 import { syncUserDocument } from './users';
 import { syncPrivacyConsent, syncAppPreferences } from './settings';
-import { TrackingEngine } from '../telemetry/engine';
+import { TrackingEngine } from '../os/Biome';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setUser, setRole, setConsent, setPreferences, checkPwaState } = useAuthStore();

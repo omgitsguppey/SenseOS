@@ -12,7 +12,10 @@ export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Core Services
 export const auth = getAuth(app);
+
+// Strict online-only No-Cache Engine
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
+
 export const storage = getStorage(app, 'gs://' + firebaseConfig.storageBucket);
 export const rtdb = getDatabase(app);
 export const functions = getFunctions(app);

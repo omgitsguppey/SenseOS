@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SettingsList, SettingsRow } from '../components/SettingsUI';
 import { BrainCircuit, Database, Activity, GitCommit } from 'lucide-react';
-import { TrackingEngine } from '../../../../lib/telemetry/engine';
+import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 import { auth } from '../../../../lib/firebase/config';
 import firebaseConfig from '../../../../../firebase-applet-config.json';

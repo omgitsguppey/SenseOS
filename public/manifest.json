@@ -1,0 +1,16 @@
+{
+  "name": "SenseOS",
+  "short_name": "SenseOS",
+  "description": "An intelligent, standalone web-based operating system natively bridging Cloud AI with isolated system memory workflows.",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

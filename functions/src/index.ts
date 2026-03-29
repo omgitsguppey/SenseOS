@@ -24,7 +24,9 @@ const ai = new GoogleGenAI({});
  * Cloud Function to process raw telemetry events into daily summaries.
  * Triggered when a new document is written to the `telemetry_events` collection.
  */
-export const processTelemetryEvent = functions.firestore
+export const handleTelemetry = functions
+  .runWith({ maxInstances: 5, timeoutSeconds: 60, memory: '256MB' })
+  .firestore
   .document('telemetry_events/{eventId}')
   .onCreate(async (snap, context) => {
     const rawEvent = snap.data();
@@ -88,7 +90,9 @@ export const processTelemetryEvent = functions.firestore
     }
   });
 
-export const analyzeMedia = functions.firestore
+export const analyzeMedia = functions
+  .runWith({ maxInstances: 5, timeoutSeconds: 60, memory: '512MB' }) // Protect AI Quotas!
+  .firestore
   .document('media/{mediaId}')
   .onCreate(async (snap, context) => {
     const data = snap.data();

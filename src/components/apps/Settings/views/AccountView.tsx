@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SettingsList, SettingsRow } from '../components/SettingsUI';
 import { User, Mail, ShieldCheck, LogOut, Trash2, LogIn, Loader2 } from 'lucide-react';
-import { TrackingEngine } from '../../../../lib/telemetry/engine';
+import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 import { auth } from '../../../../lib/firebase/config';
 import { signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut } from 'firebase/auth';

@@ -7,7 +7,7 @@ import { PrivacyView } from './views/PrivacyView';
 import { AppPreferencesView } from './views/AppPreferencesView';
 import { AdminView } from './views/AdminView';
 import { IntelligenceView } from './views/IntelligenceView';
-import { TrackingEngine } from '../../../lib/telemetry/engine';
+import { TrackingEngine } from '../../../lib/os/Biome';
 
 export type SettingsRoute = 
   | 'home' 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
-import { TrackingEngine } from '../../../../lib/telemetry/engine';
+import { TrackingEngine } from '../../../../lib/os/Biome';
 
 interface SettingsListProps {
   title?: string;

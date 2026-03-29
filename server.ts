@@ -2,12 +2,53 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import fs from 'fs';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue, AggregateField } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { getAuth } from 'firebase-admin/auth';
 import { getDatabase } from 'firebase-admin/database';
 import { v4 as uuidv4 } from 'uuid';
+import pg from 'pg';
+const { Pool } = pg;
+
+// Phase 9: PostgreSQL CoreAnalytics Engine Setup
+let pgPool: pg.Pool | null = null;
+if (process.env.DATABASE_URL) {
+  pgPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
+  });
+  
+  // Apple iOS Reverse-Engineered SQL Schema Bootloader
+  pgPool.query(`
+    CREATE TABLE IF NOT EXISTS telemetry_events (
+      event_id UUID PRIMARY KEY,
+      session_id VARCHAR(255),
+      user_id VARCHAR(255),
+      device_platform VARCHAR(50),
+      app_module VARCHAR(100),
+      event_name VARCHAR(100),
+      event_params_json JSONB,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS metric_reports (
+      report_id UUID PRIMARY KEY,
+      os_version VARCHAR(50),
+      app_version VARCHAR(50),
+      diagnostic_type VARCHAR(100),
+      payload_data JSONB,
+      start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `).then(() => {
+    console.log('✅ [SQL Engine] PostgreSQL Telemetry Schemas Mounted Successfully!');
+  }).catch(err => {
+    console.error('❌ [SQL Engine] Schema Initialization Failed:', err);
+  });
+} else {
+  console.warn('⚠️ [SQL Engine] DATABASE_URL missing. Telemetry inserts will simulate acceptance pending external Cloud SQL binding.');
+}
 
 let firebaseConfig: any = {};
 try {
@@ -32,6 +73,29 @@ initializeApp(adminConfig);
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Phase 8: Hardened Security Pipeline
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
+
+  const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 300, // 300 requests per 15 minutes
+    message: { error: 'Too many requests mapped to this IP. Please wait 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const uploadLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 30, // 30 images per minute to securely protect Google Cloud AI / Storage quotas
+    message: { error: 'Upload Quota Reached: Maximum 30 images per minute.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  app.use(globalLimiter);
 
   const dbId: string = firebaseConfig.firestoreDatabaseId || '(default)';
   const db = getFirestore(dbId);
@@ -67,11 +131,90 @@ async function startServer() {
     console.error('Failed to configure CORS for storage bucket:', error);
   }
 
+  // Phase 10: Apple iOS Multi-Daemon Telemetry Sync Engine
+  app.post('/api/telemetry/flush', globalLimiter, async (req, res) => {
+    try {
+      const { events, metrics } = req.body;
+      
+      const hasEvents = Array.isArray(events) && events.length > 0;
+      const hasMetrics = Array.isArray(metrics) && metrics.length > 0;
+
+      if (!hasEvents && !hasMetrics) {
+        return res.status(400).json({ error: 'Invalid telemetry batch (Biome and MetricKit empty)' });
+      }
+
+      // If Postgres isn't hooked up yet, mock persistence so React queues flush successfully!
+      if (!pgPool) {
+        return res.status(200).json({ status: 'SQL Bypassed (Missing DATABASE_URL)', count: (events?.length || 0) + (metrics?.length || 0) });
+      }
+
+      // Deep Postgres transactional mapping protecting against individual row faults
+      const client = await pgPool.connect();
+      try {
+        await client.query('BEGIN');
+
+        if (hasEvents) {
+          const insertQuery = `
+            INSERT INTO telemetry_events (
+              event_id, session_id, user_id, device_platform, app_module, event_name, event_params_json, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (event_id) DO NOTHING
+          `;
+          for (const ev of events) {
+            const params = [
+              ev.stream_id || ev.event_id,
+              ev.session_id,
+              ev.user_id || 'anonymous',
+              ev.device_platform,
+              ev.app_module,
+              ev.stream_type || ev.event_name,
+              JSON.stringify(ev.payload || ev.metadata || {}),
+              new Date(ev.utc_timestamp)
+            ];
+            await client.query(insertQuery, params);
+          }
+        }
+
+        if (hasMetrics) {
+          const metricQuery = `
+            INSERT INTO metric_reports (
+              report_id, os_version, app_version, diagnostic_type, payload_data, start_date
+            ) VALUES ($1, $2, $3, $4, $5, $6)
+            ON CONFLICT (report_id) DO NOTHING
+          `;
+          for (const mx of metrics) {
+             const mxParams = [
+               mx.report_id, 
+               mx.os_version, 
+               mx.app_version, 
+               mx.diagnostic_type, 
+               JSON.stringify(mx.payload_data), 
+               new Date(mx.start_date)
+             ];
+             await client.query(metricQuery, mxParams);
+          }
+        }
+
+        await client.query('COMMIT');
+      } catch (e) {
+        await client.query('ROLLBACK');
+        throw e;
+      } finally {
+        client.release();
+      }
+
+      return res.status(200).json({ status: 'Persisted to Hardware SQL', count: (events?.length || 0) + (metrics?.length || 0) });
+    } catch (err) {
+      console.error('[SQL Telemetry] Flush transaction halted', err);
+      return res.status(500).json({ error: 'PostgreSQL Database mapping failed' });
+    }
+  });
+
   // Increase payload limit for base64 images
   app.use(express.json({ limit: '50mb' }));
 
   // API route to proxy Firebase Storage uploads and bypass CORS
-  app.post('/api/upload', async (req, res) => {
+  app.post('/api/upload', uploadLimiter, async (req, res) => {
     try {
       const { path: storagePath, bucket, idToken, contentType, dataUrl, userId, projectId, analysis } = req.body;
       

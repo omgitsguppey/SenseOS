@@ -10,6 +10,7 @@ body {
   color: #fff;
   overflow: hidden;
   overscroll-behavior: none;
+  touch-action: pan-x pan-y;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -18,6 +19,14 @@ body {
   display: none;
 }
 * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+input, textarea {
+  -webkit-user-select: auto;
+  user-select: auto;
 }

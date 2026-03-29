@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { SettingsList, SettingsRow, SettingsToggle } from '../components/SettingsUI';
 import { Moon, Wind } from 'lucide-react';
-import { TrackingEngine } from '../../../../lib/telemetry/engine';
+import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 
 export function AppPreferencesView() {

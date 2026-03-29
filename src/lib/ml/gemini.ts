@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { useAuthStore } from '../../store/auth';
-import { TrackingEngine } from '../telemetry/engine';
+import { TrackingEngine } from '../os/Biome';
+import { Intelligence } from '../os/Intelligence';
 
 // Initialize the Gemini client
 // Note: In a production app, you might want to proxy this through a backend
@@ -23,10 +24,14 @@ export const MLService = {
     TrackingEngine.track('ml_inference_start', 'ml_service', 'intelligence');
 
     try {
+      // Phase 10: AI Intelligence Node (App-to-App memory injection)
+      const biometrics = Intelligence.generatePredictiveContext();
+
       const systemInstruction = `You are the core intelligence engine of SenseOS. 
 You provide personalized, concise, and helpful responses.
 User Name: ${user?.displayName || 'Anonymous'}
-Context: ${context || 'General OS interaction'}
+Explicit User Context: ${context || 'General OS interaction'}
+Pattern of Life (Recent App Transitions): ${biometrics.predictive_context}
 `;
 
       const response = await ai.models.generateContent({

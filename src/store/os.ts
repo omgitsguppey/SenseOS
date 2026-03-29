@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { MetricKit } from '../lib/os/MetricKit';
 
 export interface Process {
   pid: string;
@@ -87,7 +88,10 @@ export const useOSStore = create<OSState>((set, get) => ({
       });
 
       if (survivingProcesses.length !== state.processes.length) {
-        console.log(`[OS Kernel] RAM Watchdog terminated ${state.processes.length - survivingProcesses.length} stale background processes.`);
+        const swept = state.processes.length - survivingProcesses.length;
+        console.log(`[OS Kernel] RAM Watchdog terminated ${swept} stale background processes.`);
+        // Phase 10: Hardware Memory Profiling natively ingested by MetricKit
+        MetricKit.logDiagnostic('gc_sweep', { processesCleared: swept });
       }
 
       return { processes: survivingProcesses };
