@@ -1,11 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupCors = exports.analyzeMedia = exports.processTelemetryEvent = void 0;
+exports.uploadMediaFunction = exports.analyzeMedia = exports.processTelemetryEvent = void 0;
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const firestore_1 = require("firebase-admin/firestore");
+const storage_1 = require("firebase-admin/storage");
 const genai_1 = require("@google/genai");
-admin.initializeApp();
-const db = admin.firestore();
+const uuid_1 = require("uuid");
+const firebaseConfig = {
+    projectId: "gen-lang-client-0938925035",
+    storageBucket: "gen-lang-client-0938925035.firebasestorage.app",
+    firestoreDatabaseId: "ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44"
+};
+admin.initializeApp({
+    projectId: firebaseConfig.projectId,
+    storageBucket: firebaseConfig.storageBucket
+});
+// Bind specifically to the custom AI Studio database ID
+const db = (0, firestore_1.getFirestore)(admin.app(), firebaseConfig.firestoreDatabaseId);
 const ai = new genai_1.GoogleGenAI({});
 /**
  * Cloud Function to process raw telemetry events into daily summaries.
@@ -97,16 +109,36 @@ exports.analyzeMedia = functions.firestore
         await snap.ref.update({ status: 'failed' });
     }
 });
-exports.setupCors = functions.https.onRequest(async (req, res) => {
-    const bucket = admin.storage().bucket('gen-lang-client-0938925035.appspot.com');
-    await bucket.setCorsConfiguration([
-        {
-            origin: ['*'],
-            method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
-            responseHeader: ['Content-Type', 'Authorization', 'Content-Length', 'User-Agent', 'x-goog-resumable'],
-            maxAgeSeconds: 3600
+exports.uploadMediaFunction = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to upload media.');
+    }
+    const { fileName, fileType, fileData } = data;
+    if (!fileName || !fileData) {
+        throw new functions.https.HttpsError('invalid-argument', 'Missing fileName or fileData payload.');
+    }
+    const userId = context.auth.uid;
+    const mediaId = (0, uuid_1.v4)();
+    const path = `users/${userId}/photos/originals/${mediaId}-${fileName}`;
+    const bucket = (0, storage_1.getStorage)().bucket(firebaseConfig.storageBucket);
+    const fileRef = bucket.file(path);
+    // Parse Base64 buffer payload
+    const base64Data = fileData.replace(/^data:\w+\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+    await fileRef.save(buffer, {
+        metadata: {
+            contentType: fileType || 'application/octet-stream'
         }
-    ]);
-    res.send('CORS configuration applied successfully.');
+    });
+    // Construct valid Firebase Storage download URL mapped to your exact bucket
+    const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${encodeURIComponent(path)}?alt=media`;
+    // Write directly to Firestore, bypassing client v2 strict schema evaluation blockers
+    const docRef = await db.collection('media').add({
+        userId,
+        originalUrl: downloadUrl,
+        status: 'uploaded',
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    return { id: docRef.id, url: downloadUrl };
 });
 //# sourceMappingURL=index.js.map

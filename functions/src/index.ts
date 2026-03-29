@@ -4,7 +4,12 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { GoogleGenAI } from '@google/genai';
 import { v4 as uuidv4 } from 'uuid';
-import * as firebaseConfig from '../../firebase-applet-config.json';
+
+const firebaseConfig = {
+  projectId: "gen-lang-client-0938925035",
+  storageBucket: "gen-lang-client-0938925035.firebasestorage.app",
+  firestoreDatabaseId: "ai-studio-08029c71-bbbd-4208-a360-a49f0535cc44"
+};
 
 admin.initializeApp({
   projectId: firebaseConfig.projectId,
