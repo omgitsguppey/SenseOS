@@ -102,9 +102,10 @@ export const analyzeMedia = functions
     await snap.ref.update({ status: 'analyzing' });
 
     try {
-      // Use Gemini 3.1 Flash-Lite for analysis
+      // Phase 12: Dual AI Engine Pipeline (Vertex Flash-Lite Integration)
+      // Exclusively routing to Flash-Lite (cheapest model possible), delegating dense object recognition explicitly to the Local Edge TensorFlow logic!
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-lite-preview',
+        model: 'gemini-3.1-flash-lite',
         contents: [
           {
             role: 'user',

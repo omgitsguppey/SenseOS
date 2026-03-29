@@ -19,6 +19,9 @@ export interface BiomeStream {
 const SESSION_ID = uuidv4();
 const FLUSH_INTERVAL_MS = 6000;
 const streamQueue: BiomeStream[] = [];
+// Phase 14 Fix: Immutable Agentic RAG Memory Array
+// Ensures the mathematical AI generator doesn't drop to 0 contexts when the UI automatically pushes arrays to PostgreSQL!
+const _persistentContextArchive: BiomeStream[] = [];
 
 export const Biome = {
   publish: (streamType: BiomeStream['stream_type'], appModule: string, payload: Record<string, any> = {}) => {
@@ -37,13 +40,20 @@ export const Biome = {
     };
 
     streamQueue.push(stream);
+    
+    // Push persistently for local AI contexts independently of node flushing
+    _persistentContextArchive.push(stream);
+    if (_persistentContextArchive.length > 200) {
+      _persistentContextArchive.shift();
+    }
+
     if (streamType === 'IntentStream' || ENVIRONMENT === 'dev') {
       console.log(`[Biome Node] Captured ${streamType}:`, stream);
     }
   },
 
   getRecentStreams: (count: number = 10): BiomeStream[] => {
-    return [...streamQueue].slice(-count);
+    return [..._persistentContextArchive].slice(-count);
   },
 
   syncDaemon: async () => {

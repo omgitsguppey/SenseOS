@@ -35,7 +35,7 @@ Pattern of Life (Recent App Transitions): ${biometrics.predictive_context}
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.1-flash-preview',
+        model: 'gemini-3.1-flash-lite',
         contents: prompt,
         config: {
           systemInstruction,

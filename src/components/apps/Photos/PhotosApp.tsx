@@ -7,6 +7,8 @@ import { db } from '../../../lib/firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 import { MediaViewer } from './MediaViewer';
 import { extractSemanticTags } from '../../../lib/ai/vision';
+import { Biome } from '../../../lib/os/Biome';
+import { MetricKit } from '../../../lib/os/MetricKit';
 
 // ⚡ Bolt Performance Optimization:
 const MediaGrid = React.memo(({ media, filter, gridColumns, onPhotoClick }: { media: MediaMetadata[], filter: string, gridColumns: number, onPhotoClick: (idx: number) => void }) => {
@@ -123,8 +125,15 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
     const libraryBottom = libraryRef.current.offsetTop + libraryRef.current.offsetHeight;
     const currentScrollPosition = e.currentTarget.scrollTop + e.currentTarget.clientHeight;
     
-    // If the user scrolls past the grid and into the collections, hide the floating pill
-    setIsScrolledToCollections(currentScrollPosition > libraryBottom + 120);
+    // Phase 12: Biome Integration
+    const scrolledPast = currentScrollPosition > libraryBottom + 120;
+    if (scrolledPast && !isScrolledToCollections) {
+      Biome.publish('IntentStream', 'photos', { action: 'viewed_collections_carousel' });
+      setIsScrolledToCollections(true);
+    } else if (!scrolledPast && isScrolledToCollections) {
+      Biome.publish('IntentStream', 'photos', { action: 'returned_to_grid' });
+      setIsScrolledToCollections(false);
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,7 +209,13 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
               type="text"
               placeholder="Dog, Beach, Coffee..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim().length > 3) {
+                  // Phase 12: Siri Contextual Injection hooks natively tracking iOS user inquiries
+                  Biome.publish('SearchStream', 'photos', { query: e.target.value });
+                }
+              }}
               className="w-full bg-zinc-800/80 backdrop-blur-xl border border-white/10 rounded-full py-1.5 pl-9 pr-3 text-[13px] text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all font-medium"
             />
             {searchQuery && (

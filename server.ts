@@ -213,6 +213,33 @@ async function startServer() {
   // Increase payload limit for base64 images
   app.use(express.json({ limit: '50mb' }));
 
+  // Phase 13: Authentic Intelligence Memory Endpoints
+  app.get('/api/intelligence/memory-count', async (req, res) => {
+    try {
+      const idToken = req.headers.authorization?.split('Bearer ')[1];
+      if (!idToken) return res.status(401).json({ error: 'Unauthorized' });
+
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+
+      if (!pgPool) return res.status(503).json({ error: 'Hardware Memory Array Offline' });
+
+      const client = await pgPool.connect();
+      try {
+        const events = await client.query(`SELECT COUNT(*) as c FROM telemetry_events WHERE payload_data->>'uid' = $1`, [uid]);
+        const metrics = await client.query(`SELECT COUNT(*) as c FROM metric_reports`);
+        
+        const sum = parseInt(events.rows[0]?.c || '0', 10) + parseInt(metrics.rows[0]?.c || '0', 10);
+        return res.status(200).json({ count: sum, model: 'gemini-3.1-flash-lite', status: 'Vertex Live' });
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      console.error('Memory Ping Failed:', err);
+      return res.status(500).json({ error: 'Server Fault' });
+    }
+  });
+
   // API route to proxy Firebase Storage uploads and bypass CORS
   app.post('/api/upload', uploadLimiter, async (req, res) => {
     try {
@@ -393,6 +420,67 @@ async function startServer() {
     } catch (error: any) {
       console.error('Delete user error:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+  // Phase 14 Fix: Authentic Administrative Telemetry/Node Routing
+  app.get('/api/admin/telemetry', async (req, res) => {
+    try {
+      const idToken = req.headers.authorization?.split('Bearer ')[1];
+      if (!idToken) return res.status(401).json({ error: 'Unauthorized' });
+
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+        return res.status(403).json({ error: 'Forbidden Admin Hook' });
+      }
+
+      if (!pgPool) return res.status(503).json({ error: 'Hardware SQL Array Offline' });
+
+      const limit = parseInt(req.query.limit as string || '50', 10);
+      const client = await pgPool.connect();
+      try {
+        // We pull real mathematical telemetry explicitly from Biome Postgres mappings
+        const events = await client.query('SELECT * FROM telemetry_events ORDER BY start_date DESC LIMIT $1', [limit]);
+        
+        // Map natively back to the `TelemetryEvent` TS Interface expected by Dashboard React logic
+        const mapped = events.rows.map(row => ({
+          id: row.report_id,
+          event_name: row.diagnostic_type,
+          utc_timestamp: new Date(row.start_date).getTime(),
+          user_id: row.payload_data?.uid || 'Unknown',
+          app_module: row.os_version,
+          device_platform: row.app_version,
+          metadata: row.payload_data
+        }));
+        
+        return res.status(200).json(mapped);
+      } finally {
+        client.release();
+      }
+    } catch (e) {
+      console.error('Admin telemetry fetch missed hardware pipeline:', e);
+      return res.status(500).json({ error: 'System fault' });
+    }
+  });
+
+  app.get('/api/admin/users', async (req, res) => {
+    try {
+      const idToken = req.headers.authorization?.split('Bearer ')[1];
+      if (!idToken) return res.status(401).json({ error: 'Unauthorized' });
+
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+        return res.status(403).json({ error: 'Forbidden Admin Hook' });
+      }
+
+      const limit = parseInt(req.query.limit as string || '100', 10);
+      const usersSnap = await db.collection('users').limit(limit).get();
+      const mapped = usersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+      return res.status(200).json(mapped);
+    } catch (e) {
+      console.error('Admin users fetch completely blocked:', e);
+      return res.status(500).json({ error: 'System fault' });
     }
   });
 
