@@ -7,7 +7,7 @@ import { Intelligence } from '../os/Intelligence';
 // Note: In a production app, you might want to proxy this through a backend
 // to keep the API key completely hidden, but for this preview environment,
 // we use the provided environment variable.
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env?.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY });
 
 export const MLService = {
   /**
