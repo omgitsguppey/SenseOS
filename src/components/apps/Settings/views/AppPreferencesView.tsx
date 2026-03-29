@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { SettingsList, SettingsRow, SettingsToggle } from '../components/SettingsUI';
+import { SettingsList, SettingsToggle } from '../components/SettingsUI';
 import { Moon, Wind } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
