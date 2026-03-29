@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { SettingsList, SettingsRow } from '../components/SettingsUI';
 import { Users, Activity, DownloadCloud, AlertTriangle, Server, Database } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/os/Biome';
@@ -73,10 +73,19 @@ export function AdminView() {
     'sense_memory_created': 'Created Sense Memory',
   };
 
+  const userMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const u of users) {
+      if (u.uid) {
+        map.set(u.uid, u.displayName || 'Unknown User');
+      }
+    }
+    return map;
+  }, [users]);
+
   const getUserName = (userId: string | undefined) => {
     if (!userId) return 'Anonymous';
-    const user = users.find(u => u.uid === userId);
-    return user?.displayName || 'Unknown User';
+    return userMap.get(userId) || 'Unknown User';
   };
 
   // Calculate some basic stats from recent events
