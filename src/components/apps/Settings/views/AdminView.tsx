@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { SettingsList, SettingsRow } from '../components/SettingsUI';
-import { Users, Activity, DownloadCloud, AlertTriangle, Server, Database } from 'lucide-react';
+import { SettingsList } from '../components/SettingsUI';
+import { Users } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/os/Biome';
 import { subscribeToTelemetryEvents, TelemetryEvent, subscribeToUsers, updateUserRole, updateUserQuota } from '../../../../lib/firebase/admin';
 import { UserProfile } from '../../../../lib/firebase/users';
