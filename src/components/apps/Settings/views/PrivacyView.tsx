@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SettingsList, SettingsRow, SettingsToggle } from '../components/SettingsUI';
-import { Shield, Activity, Brain, Download, Trash2, FileText } from 'lucide-react';
+import { Activity, Brain, Download, Trash2, FileText } from 'lucide-react';
 import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 
