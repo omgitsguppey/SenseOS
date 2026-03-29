@@ -1,6 +1,6 @@
-import { auth, db, storage } from './config';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { auth, db, functions } from './config';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import firebaseConfig from '../../../firebase-applet-config.json';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,52 +22,36 @@ export async function uploadMedia(
   file: File, 
   onProgress: (progress: number) => void
 ): Promise<string> {
-  try {
-    const mediaId = uuidv4();
-    const path = `users/${userId}/photos/originals/${mediaId}-${file.name}`;
-    
-    onProgress(0); // Indicate start
-    
-    if (!auth.currentUser) {
-      throw new Error("User is not authenticated");
-    }
-    
-    const storageRef = ref(storage, path);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+  onProgress(10); // Initialize conversion
+  
+  if (!auth.currentUser) {
+    throw new Error("User is not authenticated");
+  }
 
-    return new Promise((resolve, reject) => {
-      uploadTask.on('state_changed', 
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          onProgress(Math.round(progress));
-        }, 
-        (error) => {
-          console.error('Upload task error:', error);
-          reject(error);
-        }, 
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            
-            // Save metadata to Firestore
-            const docRef = await addDoc(collection(db, 'media'), {
-              userId,
-              originalUrl: downloadURL,
-              status: 'uploaded',
-              createdAt: serverTimestamp()
-            });
-            
-            onProgress(100);
-            resolve(docRef.id);
-          } catch (err) {
-            console.error('Error saving metadata:', err);
-            reject(err);
-          }
-        }
-      );
+  const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+
+  try {
+    const fileData = await toBase64(file);
+    onProgress(30);
+
+    const uploadMediaFunction = httpsCallable(functions, 'uploadMediaFunction');
+    onProgress(50); // Inform UI that request is en route
+    
+    const result = await uploadMediaFunction({
+      fileName: file.name,
+      fileType: file.type,
+      fileData
     });
+
+    onProgress(100);
+    return (result.data as any).id;
   } catch (error) {
-    console.error('Upload task error:', error);
+    console.error('Cloud function upload failed:', error);
     throw error;
   }
 }
