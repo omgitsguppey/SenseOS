@@ -419,7 +419,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Delete user error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
   // Phase 14 Fix: Authentic Administrative Telemetry/Node Routing
@@ -528,7 +528,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Update quota error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -622,7 +622,7 @@ async function startServer() {
       }
     } catch (error: any) {
       console.error('Sync user error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -670,7 +670,7 @@ async function startServer() {
       res.json(result);
     } catch (error: any) {
       console.error('Get settings error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -719,7 +719,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Update settings error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -769,7 +769,7 @@ async function startServer() {
       res.json({ count });
     } catch (error: any) {
       console.error('Get memory count error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -849,7 +849,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Flush telemetry error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -925,7 +925,7 @@ async function startServer() {
       res.json(events);
     } catch (error: any) {
       console.error('Get telemetry error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -981,7 +981,7 @@ async function startServer() {
       res.json(users);
     } catch (error: any) {
       console.error('Get users error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
@@ -1019,7 +1019,7 @@ async function startServer() {
       res.json({ success: true });
     } catch (error: any) {
       console.error('Update user role error:', error);
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
