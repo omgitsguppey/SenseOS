@@ -18,15 +18,15 @@ export interface TelemetryEvent {
   metadata?: Record<string, any>;
 }
 
-export async function getRecentTelemetryEvents(limitCount = 50): Promise<TelemetryEvent[]> {
+export async function getRecentTelemetryEvents(limitCount = 50, idToken?: string): Promise<TelemetryEvent[]> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/admin/telemetry?projectId=${projectId}&limit=${limitCount}`, {
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -67,15 +67,15 @@ export function subscribeToTelemetryEvents(callback: (events: TelemetryEvent[]) 
   };
 }
 
-export async function getUsers(limitCount = 100): Promise<UserProfile[]> {
+export async function getUsers(limitCount = 100, idToken?: string): Promise<UserProfile[]> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/admin/users?projectId=${projectId}&limit=${limitCount}`, {
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${token}`
       }
     });
 
@@ -116,16 +116,16 @@ export function subscribeToUsers(callback: (users: UserProfile[]) => void, limit
   };
 }
 
-export async function updateUserRole(userId: string, newRole: 'admin' | 'creator' | 'user'): Promise<void> {
+export async function updateUserRole(userId: string, newRole: 'admin' | 'creator' | 'user', idToken?: string): Promise<void> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/admin/users/${userId}/role`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ role: newRole, projectId })
@@ -140,16 +140,16 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'creator
   }
 }
 
-export async function updateUserQuota(userId: string, storageQuotaBytes: number): Promise<void> {
+export async function updateUserQuota(userId: string, storageQuotaBytes: number, idToken?: string): Promise<void> {
   try {
-    const idToken = await auth.currentUser?.getIdToken();
-    if (!idToken) throw new Error('Not authenticated');
+    const token = idToken || await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
     const response = await fetch(`/api/admin/users/${userId}/quota`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ storageQuotaBytes, projectId })
