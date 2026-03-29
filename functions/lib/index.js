@@ -125,13 +125,17 @@ exports.uploadMediaFunction = functions.https.onCall(async (data, context) => {
     // Parse Base64 buffer payload
     const base64Data = fileData.replace(/^data:\w+\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
+    const downloadToken = (0, uuid_1.v4)();
     await fileRef.save(buffer, {
         metadata: {
-            contentType: fileType || 'application/octet-stream'
+            contentType: fileType || 'application/octet-stream',
+            metadata: {
+                firebaseStorageDownloadTokens: downloadToken
+            }
         }
     });
-    // Construct valid Firebase Storage download URL mapped to your exact bucket
-    const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${encodeURIComponent(path)}?alt=media`;
+    // Construct valid Firebase Storage download URL mapped to your exact bucket with the native read token
+    const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/${encodeURIComponent(path)}?alt=media&token=${downloadToken}`;
     // Write directly to Firestore, bypassing client v2 strict schema evaluation blockers
     const docRef = await db.collection('media').add({
         userId,
