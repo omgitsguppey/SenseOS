@@ -55,7 +55,7 @@ export function MediaViewer({ media, initialIndex, onClose }: MediaViewerProps) 
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between px-4 z-50 pointer-events-auto"
           >
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95">
+            <button aria-label="Close" onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95">
               <ChevronLeft className="w-7 h-7" />
             </button>
             <div className="flex flex-col items-center">
@@ -66,7 +66,7 @@ export function MediaViewer({ media, initialIndex, onClose }: MediaViewerProps) 
                 {currentMedia.createdAt ? new Date(currentMedia.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
               </span>
             </div>
-            <button onClick={() => setShowInfo(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95">
+            <button aria-label="Info" onClick={() => setShowInfo(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95">
               <Info className="w-5 h-5" />
             </button>
           </motion.div>
@@ -135,12 +135,14 @@ export function MediaViewer({ media, initialIndex, onClose }: MediaViewerProps) 
       {/* Side Desktop Chevrons (only visible on mouse hover or transparent overlays) */}
       <div className="absolute inset-y-0 left-4 right-4 flex items-center justify-between pointer-events-none z-40">
         <button 
+          aria-label="Previous image"
           className={`p-3 bg-black/50 backdrop-blur-md rounded-full pointer-events-auto transition-opacity ${page === 0 ? 'opacity-0' : 'opacity-100 hover:bg-black/70'}`}
           onClick={(e) => { e.stopPropagation(); paginate(-1); }}
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button 
+          aria-label="Next image"
           className={`p-3 bg-black/50 backdrop-blur-md rounded-full pointer-events-auto transition-opacity ${page === media.length - 1 ? 'opacity-0' : 'opacity-100 hover:bg-black/70'}`}
           onClick={(e) => { e.stopPropagation(); paginate(1); }}
         >
@@ -158,8 +160,9 @@ export function MediaViewer({ media, initialIndex, onClose }: MediaViewerProps) 
             className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-around px-6 pb-6 z-50 pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="p-2 text-white hover:text-blue-400 transition-colors active:scale-95"><Share className="w-6 h-6" /></button>
+            <button aria-label="Share" className="p-2 text-white hover:text-blue-400 transition-colors active:scale-95"><Share className="w-6 h-6" /></button>
             <button 
+              aria-label={currentMedia.isFavorite ? "Remove from favorites" : "Add to favorites"}
               onClick={(e) => {
                 e.stopPropagation();
                 if (currentMedia.id) {
@@ -171,6 +174,7 @@ export function MediaViewer({ media, initialIndex, onClose }: MediaViewerProps) 
               <Heart className={`w-6 h-6 ${currentMedia.isFavorite ? 'text-red-500 fill-red-500 hover:text-red-400' : 'hover:text-red-500'}`} />
             </button>
             <button 
+              aria-label="Delete"
               onClick={async (e) => {
                 e.stopPropagation();
                 if (window.confirm("Drop Photo? This item will be permanently deleted from Cloud Storage.")) {
