@@ -66,6 +66,7 @@ export function AccountView() {
 
     try {
       await deleteAccount(user.uid);
+      await auth.currentUser?.delete();
       TrackingEngine.track('account_action', 'settings', 'account', { action: 'delete_account_success' });
       // The auth state will automatically update via AuthProvider/onAuthStateChanged
       // which will redirect the user away from the authenticated view.
