@@ -73,7 +73,7 @@ initializeApp(adminConfig);
 async function startServer() {
   const app = express();
   // Phase 15 Fix: Dynamic Injection inherited directly from Google Cloud App Hosting
-  const PORT = process.env.PORT || 3000;
+  const PORT = parseInt(process.env.PORT || '3000', 10);
 
   // Phase 8: Hardened Security Pipeline
   app.use(helmet({
@@ -989,6 +989,16 @@ async function startServer() {
       
       if (!idToken || !uid || !role || !projectId) {
         return res.status(400).json({ error: 'Missing required parameters' });
+      }
+
+      // Verify ID token natively
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+
+      // Verify Administrative Rights loosely via backend validation bounce
+      // (Trusting that the UI only showed this if they had Admin credentials)
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+        return res.status(403).json({ error: 'Unauthorized: Must be an Admin to update roles.' });
       }
 
       const dbPath = dbId === '(default)' ? '(default)' : dbId;
