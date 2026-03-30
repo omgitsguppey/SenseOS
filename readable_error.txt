@@ -1,0 +1,63 @@
+﻿node.exe : 
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (:  
+  String) [], RemoteExc   
+ eption
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+[1m[41m Failed Suites 1 
+[49m[22m[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»
+ΓÄ»[39m
+
+[41m[1m FAIL [22m[49m 
+src/lib/firebase/media.tes
+t.ts[2m [ src/lib/firebas
+e/media.test.ts ][22m
+[31m[1mError[22m: 
+[vitest] There was an 
+error when mocking a 
+module. If you are using 
+"vi.mock" factory, make 
+sure there are no top 
+level variables inside, 
+since this call is 
+hoisted to top of the 
+file. Read more: https://v
+itest.dev/api/vi.html#vi-m
+ock[39m
+[36m [2mΓ¥»[22m src/lib
+/firebase/media.ts:[2m1:1
+[22m[39m
+    [90m  1|[39m import 
+{ auth, dbΓÇª
+    [90m   |[39m 
+[31m^[39m
+    [90m  2|[39m import 
+{ collectiΓÇª
+    [90m  3|[39m import 
+{ httpsCalΓÇª
+
+[31m[1mCaused by: 
+ReferenceError[22m: 
+Cannot access 'mockAuth' 
+before initialization[39m
+[36m [2mΓ¥»[22m src/lib
+/firebase/media.test.ts:[
+2m8:9[22m[39m
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ
+»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]Γ
+Ä»[22m[39m
+

@@ -1,9 +1,21 @@
-import { test, describe, beforeEach, afterEach, vi, expect } from 'vitest';
+import { test, describe, beforeEach, vi, expect } from 'vitest';
 import { useAuthStore } from '../../store/auth';
 import { TrackingEngine } from '../os/Biome';
 import { Intelligence } from '../os/Intelligence';
 import { MLService } from './gemini';
-import { GoogleGenAI } from '@google/genai';
+
+vi.mock('@google/genai', () => ({
+  GoogleGenAI: class {
+    models = {
+      generateContent: vi.fn(async ({ contents }) => {
+        if (contents === 'ThrowError') {
+          throw new Error('Mocked AI Error');
+        }
+        return { text: 'Mocked AI Response' };
+      })
+    };
+  }
+}));
 
 describe('MLService.generatePersonalizedIntelligence', () => {
   beforeEach(() => {

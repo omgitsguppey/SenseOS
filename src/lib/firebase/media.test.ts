@@ -1,53 +1,39 @@
-import test, { mock } from 'node:test';
-import assert from 'node:assert';
-import { EventEmitter } from 'node:events';
+import { test, vi, expect, beforeEach, describe } from 'vitest';
 
-// Create a mock auth object
-const mockAuth = {
-  currentUser: { uid: 'user123' }
-};
+const mocks = vi.hoisted(() => ({
+  uploadMediaFn: vi.fn(),
+  mockAuth: { currentUser: { uid: 'user123' } }
+}));
 
-const mockFunctions = {};
+vi.mock('./config', () => ({
+  auth: mocks.mockAuth,
+  db: {},
+  functions: {},
+  storage: {}
+}));
 
-// Mock config module completely to avoid initializing Firebase
-mock.module('./config', {
-  namedExports: {
-    auth: mockAuth,
-    db: {},
-    functions: mockFunctions,
-    storage: {}
-  }
-});
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(),
+  query: vi.fn(),
+  where: vi.fn(),
+  onSnapshot: vi.fn(),
+  doc: vi.fn(),
+  deleteDoc: vi.fn(),
+  updateDoc: vi.fn(),
+  addDoc: vi.fn(),
+}));
 
-mock.module('firebase/firestore', {
-  namedExports: {
-    collection: mock.fn(),
-    query: mock.fn(),
-    where: mock.fn(),
-    onSnapshot: mock.fn(),
-    doc: mock.fn(),
-    deleteDoc: mock.fn(),
-    updateDoc: mock.fn(),
-    addDoc: mock.fn(),
-  }
-});
+vi.mock('firebase/functions', () => ({
+  httpsCallable: vi.fn(() => mocks.uploadMediaFn)
+}));
 
-let _mockUploadMediaFunction = mock.fn(() => Promise.resolve({ data: { id: 'mocked-id' } }));
-mock.module('firebase/functions', {
-  namedExports: {
-    httpsCallable: mock.fn(() => _mockUploadMediaFunction)
-  }
-});
+vi.mock('firebase/storage', () => ({
+  ref: vi.fn(),
+  uploadBytesResumable: vi.fn(),
+  getDownloadURL: vi.fn(),
+}));
 
-mock.module('firebase/storage', {
-    namedExports: {
-        ref: mock.fn(),
-        uploadBytesResumable: mock.fn(),
-        getDownloadURL: mock.fn(),
-    }
-});
-
-// Setup globals for File and FileReader
+// Setup globals
 global.File = class File {
   name: string;
   type: string;
@@ -69,13 +55,15 @@ global.FileReader = class FileReader {
   }
 } as any;
 
+import { uploadMedia } from './media';
 
-test('uploadMedia happy path', async () => {
-    // reset for this test
-    _mockUploadMediaFunction = mock.fn(() => Promise.resolve({ data: { id: 'mocked-id' } }));
+describe('MediaUpload Tests', () => {
+  beforeEach(() => {
+    mocks.uploadMediaFn.mockResolvedValue({ data: { id: 'mocked-id' } });
+    mocks.mockAuth.currentUser = { uid: 'user123' };
+  });
 
-    const { uploadMedia } = await import('./media.ts');
-
+  test('uploadMedia happy path', async () => {
     const file = new File([''], 'test.png', { type: 'image/png' });
     const progressUpdates: number[] = [];
 
@@ -83,37 +71,25 @@ test('uploadMedia happy path', async () => {
         progressUpdates.push(progress);
     }, {});
 
-    assert.strictEqual(id, 'mocked-id');
-    assert.deepStrictEqual(progressUpdates, [10, 30, 50, 100]);
-});
+    expect(id).toBe('mocked-id');
+    expect(progressUpdates).toEqual([10, 30, 50, 100]);
+  });
 
-test('uploadMedia throws error when user is not authenticated', async () => {
-    // Temporarily unset currentUser
-    const originalUser = mockAuth.currentUser;
-    mockAuth.currentUser = null as any;
-
-    const { uploadMedia } = await import('./media.ts');
+  test('uploadMedia throws error when user is not authenticated', async () => {
+    mocks.mockAuth.currentUser = null as any;
     const file = new File([''], 'test.png', { type: 'image/png' });
 
-    await assert.rejects(
-        async () => await uploadMedia('user123', file, () => {}, {}),
-        (err: Error) => err.message === 'User is not authenticated'
-    );
+    await expect(
+        uploadMedia('user123', file, () => {}, {})
+    ).rejects.toThrow('User is not authenticated');
+  });
 
-    // Restore
-    mockAuth.currentUser = originalUser;
-});
-
-test('uploadMedia throws error when cloud function fails', async () => {
-    const { uploadMedia } = await import('./media.ts');
-
-    // Override the mock implementation for this test
-    _mockUploadMediaFunction = mock.fn(() => Promise.reject(new Error('Cloud function failed')));
-
+  test('uploadMedia throws error when cloud function fails', async () => {
+    mocks.uploadMediaFn.mockRejectedValue(new Error('Cloud function failed'));
     const file = new File([''], 'test.png', { type: 'image/png' });
 
-    await assert.rejects(
-        async () => await uploadMedia('user123', file, () => {}, {}),
-        (err: Error) => err.message === 'Cloud function failed'
-    );
+    await expect(
+        uploadMedia('user123', file, () => {}, {})
+    ).rejects.toThrow('Cloud function failed');
+  });
 });

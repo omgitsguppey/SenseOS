@@ -1,5 +1,4 @@
-import { describe, it, mock, beforeEach, afterEach } from 'node:test';
-import assert from 'node:assert';
+import { describe, it, vi, beforeEach, afterEach, expect } from 'vitest';
 import { syncPrivacyConsent } from './settings';
 import { auth } from './config';
 
@@ -8,11 +7,11 @@ describe('syncPrivacyConsent error paths', () => {
   let originalCurrentUser: any;
 
   beforeEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     originalFetch = globalThis.fetch;
     originalCurrentUser = auth.currentUser;
     // Suppress console.error during tests to avoid noise
-    mock.method(console, 'error', () => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -23,10 +22,9 @@ describe('syncPrivacyConsent error paths', () => {
   it('should throw an error if not authenticated', async () => {
     Object.defineProperty(auth, 'currentUser', { value: null, configurable: true });
 
-    await assert.rejects(
-      async () => await syncPrivacyConsent('test-uid'),
-      { message: 'Not authenticated' }
-    );
+    await expect(
+      syncPrivacyConsent('test-uid')
+    ).rejects.toThrow('Not authenticated');
   });
 
   it('should throw an error if fetch response is not ok', async () => {
@@ -35,14 +33,13 @@ describe('syncPrivacyConsent error paths', () => {
       configurable: true
     });
 
-    globalThis.fetch = mock.fn(async () => ({
+    globalThis.fetch = vi.fn(async () => ({
       ok: false,
       text: async () => 'Internal Server Error'
     })) as any;
 
-    await assert.rejects(
-      async () => await syncPrivacyConsent('test-uid'),
-      { message: 'Get privacy settings failed: Internal Server Error' }
-    );
+    await expect(
+      syncPrivacyConsent('test-uid')
+    ).rejects.toThrow('Get privacy settings failed: Internal Server Error');
   });
 });

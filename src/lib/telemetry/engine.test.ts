@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, describe, beforeEach, vi, expect } from 'vitest';
 
 // Override setInterval globally BEFORE any imports
 const originalSetInterval = global.setInterval;
@@ -24,63 +23,64 @@ process.env.NODE_ENV = 'test';
 import { TrackingEngine, _getEventQueue } from './engine';
 import { useAuthStore } from '../../store/auth';
 
-test('TrackingEngine Privacy Filtering', async (t) => {
+describe('TrackingEngine Privacy Filtering', () => {
   const defaultState = {
     privacyConsent: { telemetryEnabled: true },
     role: 'user',
     user: { uid: 'test-user' }
   };
 
-  t.beforeEach(() => {
+  beforeEach(() => {
     _getEventQueue().length = 0;
+    vi.restoreAllMocks();
   });
 
-  await t.test('should track normal events when telemetry is enabled', (t) => {
-    t.mock.method(useAuthStore, 'getState', () => defaultState);
+  test('should track normal events when telemetry is enabled', () => {
+    vi.spyOn(useAuthStore, 'getState').mockReturnValue(defaultState as any);
 
     TrackingEngine.track('settings_open', 'settings', '/settings');
 
     const queue = _getEventQueue();
-    assert.strictEqual(queue.length, 1, 'Event should be queued');
-    assert.strictEqual(queue[0].event_name, 'settings_open');
+    expect(queue.length).toBe(1);
+    expect(queue[0].event_name).toBe('settings_open');
   });
 
-  await t.test('should NOT track normal events when telemetry is disabled', (t) => {
-    t.mock.method(useAuthStore, 'getState', () => ({
+  test('should NOT track normal events when telemetry is disabled', () => {
+    vi.spyOn(useAuthStore, 'getState').mockReturnValue({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any);
 
     TrackingEngine.track('settings_open', 'settings', '/settings');
 
     const queue = _getEventQueue();
-    assert.strictEqual(queue.length, 0, 'Event should NOT be queued');
+    expect(queue.length).toBe(0);
   });
 
-  await t.test('should track critical events even when telemetry is disabled', (t) => {
-    t.mock.method(useAuthStore, 'getState', () => ({
+  test('should track critical events even when telemetry is disabled', () => {
+    vi.spyOn(useAuthStore, 'getState').mockReturnValue({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any);
 
     TrackingEngine.track('error_render', 'system', '/any');
 
     const queue = _getEventQueue();
-    assert.strictEqual(queue.length, 1, 'Critical event should be queued');
-    assert.strictEqual(queue[0].event_name, 'error_render');
+    expect(queue.length).toBe(1);
+    expect(queue[0].event_name).toBe('error_render');
   });
 
-  await t.test('should identify all critical events', (t) => {
-    t.mock.method(useAuthStore, 'getState', () => ({
+  test('should identify all critical events', () => {
+    vi.spyOn(useAuthStore, 'getState').mockReturnValue({
       ...defaultState,
       privacyConsent: { telemetryEnabled: false }
-    }));
+    } as any);
 
     const criticalEvents = ['consent_updated', 'error_render', 'error_action'];
 
     criticalEvents.forEach((name, i) => {
       TrackingEngine.track(name, 'module', 'route');
-      assert.strictEqual(_getEventQueue().length, i + 1, `${name} should be tracked`);
+      expect(_getEventQueue().length).toBe(i + 1);
     });
   });
 });

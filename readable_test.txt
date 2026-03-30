@@ -1,0 +1,99 @@
+﻿
+> react-example@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.1.2 [39m[90mC:/Users/uylus/OneDrive/Documents/senseos[39m
+
+ [31mΓ¥»[39m src/lib/firebase/media.test.ts [2m([22m[2m0 test[22m[2m)[22m
+ [32mΓ£ô[39m src/store/auth.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+[90mstdout[2m | src/lib/telemetry/engine.test.ts[2m > [22m[2mTrackingEngine Privacy Filtering[2m > [22m[2mshould track normal events when telemetry is enabled
+[22m[39m[Telemetry: settings_open] {
+  event_id: [32m'd886a43c-d3ff-48c3-b773-e1822d0bd0f0'[39m,
+  event_name: [32m'settings_open'[39m,
+  utc_timestamp: [32m'2026-03-30T02:03:16.658Z'[39m,
+  user_id: [32m'test-user'[39m,
+  session_id: [32m'6f6c0119-7f9f-4346-8f40-7c79d7a967b4'[39m,
+  role: [32m'user'[39m,
+  app_module: [32m'settings'[39m,
+  route: [32m'/settings'[39m,
+  device_platform: [32m'web'[39m,
+  pwa_installed_state: [33mfalse[39m,
+  environment: [32m'dev'[39m,
+  schema_version: [32m'1.0.0'[39m,
+  metadata: {}
+}
+
+[90mstdout[2m | src/lib/telemetry/engine.test.ts[2m > [22m[2mTrackingEngine Privacy Filtering[2m > [22m[2mshould track critical events even when telemetry is disabled
+[22m[39m[Telemetry: error_render] {
+  event_id: [32m'4657d68c-b2bc-4186-ac06-34fefbe8be7b'[39m,
+  event_name: [32m'error_render'[39m,
+  utc_timestamp: [32m'2026-03-30T02:03:16.666Z'[39m,
+  user_id: [32m'test-user'[39m,
+  session_id: [32m'6f6c0119-7f9f-4346-8f40-7c79d7a967b4'[39m,
+  role: [32m'user'[39m,
+  app_module: [32m'system'[39m,
+  route: [32m'/any'[39m,
+  device_platform: [32m'web'[39m,
+  pwa_installed_state: [33mfalse[39m,
+  environment: [32m'dev'[39m,
+  schema_version: [32m'1.0.0'[39m,
+  metadata: {}
+}
+
+ [32mΓ£ô[39m src/lib/firebase/settings.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+[90mstdout[2m | src/lib/telemetry/engine.test.ts[2m > [22m[2mTrackingEngine Privacy Filtering[2m > [22m[2mshould identify all critical events
+[22m[39m[Telemetry: consent_updated] {
+  event_id: [32m'4b086242-abc8-40a9-acc5-070f5c922812'[39m,
+  event_name: [32m'consent_updated'[39m,
+  utc_timestamp: [32m'2026-03-30T02:03:16.669Z'[39m,
+  user_id: [32m'test-user'[39m,
+  session_id: [32m'6f6c0119-7f9f-4346-8f40-7c79d7a967b4'[39m,
+  role: [32m'user'[39m,
+  app_module: [32m'module'[39m,
+  route: [32m'route'[39m,
+  device_platform: [32m'web'[39m,
+  pwa_installed_state: [33mfalse[39m,
+  environment: [32m'dev'[39m,
+  schema_version: [32m'1.0.0'[39m,
+  metadata: {}
+}
+[Telemetry: error_render] {
+  event_id: [32m'9bcc4bee-7d32-470c-b058-8bda880bd30b'[39m,
+  event_name: [32m'error_render'[39m,
+  utc_timestamp: [32m'2026-03-30T02:03:16.670Z'[39m,
+  user_id: [32m'test-user'[39m,
+  session_id: [32m'6f6c0119-7f9f-4346-8f40-7c79d7a967b4'[39m,
+  role: [32m'user'[39m,
+  app_module: [32m'module'[39m,
+  route: [32m'route'[39m,
+  device_platform: [32m'web'[39m,
+  pwa_installed_state: [33mfalse[39m,
+  environment: [32m'dev'[39m,
+  schema_version: [32m'1.0.0'[39m,
+  metadata: {}
+}
+[Telemetry: error_action] {
+  event_id: [32m'dea68be9-0f73-402d-991e-2ab4bf708d16'[39m,
+  event_name: [32m'error_action'[39m,
+  utc_timestamp: [32m'2026-03-30T02:03:16.670Z'[39m,
+  user_id: [32m'test-user'[39m,
+  session_id: [32m'6f6c0119-7f9f-4346-8f40-7c79d7a967b4'[39m,
+  role: [32m'user'[39m,
+  app_module: [32m'module'[39m,
+  route: [32m'route'[39m,
+  device_platform: [32m'web'[39m,
+  pwa_installed_state: [33mfalse[39m,
+  environment: [32m'dev'[39m,
+  schema_version: [32m'1.0.0'[39m,
+  metadata: {}
+}
+
+ [32mΓ£ô[39m src/lib/telemetry/engine.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [31mΓ¥»[39m src/lib/ml/gemini.test.ts [2m([22m[2m0 test[22m[2m)[22m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[90m (9)[39m
+[2m   Start at [22m 21:03:14
+[2m   Duration [22m 2.66s[2m (transform 1.73s, setup 809ms, import 3.23s, tests 79ms, environment 2ms)[22m
+
