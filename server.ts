@@ -425,7 +425,7 @@ async function startServer() {
 
       const decodedToken = await getAuth().verifyIdToken(idToken);
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden Admin Hook' });
       }
 
@@ -465,7 +465,7 @@ async function startServer() {
 
       const decodedToken = await getAuth().verifyIdToken(idToken);
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden Admin Hook' });
       }
 
@@ -493,10 +493,9 @@ async function startServer() {
       // Verify ID token natively
       const decodedToken = await getAuth().verifyIdToken(idToken);
 
-      // Verify Administrative Rights loosely via backend validation bounce
-      // (Trusting that the UI only showed this if they had Admin credentials)
+      // Verify Administrative Rights
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized: Must be an Admin to modify quotas.' });
       }
 
@@ -859,6 +858,15 @@ async function startServer() {
         return res.status(400).json({ error: 'Missing required parameters' });
       }
 
+      // Verify ID token natively
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+
+      // Verify Administrative Rights
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized: Must be an Admin to access telemetry.' });
+      }
+
       const dbPath = dbId === '(default)' ? '(default)' : dbId;
       const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbPath}/documents:runQuery`;
       
@@ -935,6 +943,15 @@ async function startServer() {
         return res.status(400).json({ error: 'Missing required parameters' });
       }
 
+      // Verify ID token natively
+      const decodedToken = await getAuth().verifyIdToken(idToken);
+
+      // Verify Administrative Rights
+      const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized: Must be an Admin to access users.' });
+      }
+
       const dbPath = dbId === '(default)' ? '(default)' : dbId;
       const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/${dbPath}/documents:runQuery`;
       
@@ -994,10 +1011,9 @@ async function startServer() {
       // Verify ID token natively
       const decodedToken = await getAuth().verifyIdToken(idToken);
 
-      // Verify Administrative Rights loosely via backend validation bounce
-      // (Trusting that the UI only showed this if they had Admin credentials)
+      // Verify Administrative Rights
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized: Must be an Admin to update roles.' });
       }
 
