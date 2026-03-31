@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-globalThis.requestIdleCallback = vi.fn((cb) => setTimeout(cb, 1));
+globalThis.requestIdleCallback = vi.fn((cb) => setTimeout(cb, 1) as unknown as number);
 process.env.NODE_ENV = 'test';
 process.env.GEMINI_API_KEY = 'test-key';
 

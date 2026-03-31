@@ -1,5 +1,6 @@
 import { auth } from './config';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { getAuthToken } from './authUtils';
 
 export interface PrivacyConsent {
   telemetryEnabled: boolean;
@@ -24,22 +25,6 @@ const defaultPreferences: AppPreferences = {
   reducedMotion: false,
   updatedAt: new Date().toISOString()
 };
-
-let cachedTokenPromise: Promise<string> | null = null;
-let tokenCacheTimeout: any = null;
-
-async function getAuthToken(): Promise<string | undefined> {
-  if (!auth.currentUser) return undefined;
-  if (cachedTokenPromise) return cachedTokenPromise;
-
-  cachedTokenPromise = auth.currentUser.getIdToken();
-  tokenCacheTimeout = setTimeout(() => {
-    cachedTokenPromise = null;
-    tokenCacheTimeout = null;
-  }, 50); // Brief cache to batch concurrent sync requests
-
-  return cachedTokenPromise;
-}
 
 export async function syncPrivacyConsent(uid: string, idToken?: string): Promise<PrivacyConsent> {
   try {

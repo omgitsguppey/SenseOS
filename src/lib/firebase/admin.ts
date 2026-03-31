@@ -1,6 +1,7 @@
 import { auth } from './config';
 import { UserProfile } from './users';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { getAuthToken } from './authUtils';
 
 export interface TelemetryEvent {
   id: string;
@@ -20,7 +21,7 @@ export interface TelemetryEvent {
 
 export async function getRecentTelemetryEvents(limitCount = 50, idToken?: string): Promise<TelemetryEvent[]> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -69,7 +70,7 @@ export function subscribeToTelemetryEvents(callback: (events: TelemetryEvent[]) 
 
 export async function getUsers(limitCount = 100, idToken?: string): Promise<UserProfile[]> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -118,7 +119,7 @@ export function subscribeToUsers(callback: (users: UserProfile[]) => void, limit
 
 export async function updateUserRole(userId: string, newRole: 'admin' | 'creator' | 'user', idToken?: string): Promise<void> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;
@@ -142,7 +143,7 @@ export async function updateUserRole(userId: string, newRole: 'admin' | 'creator
 
 export async function updateUserQuota(userId: string, storageQuotaBytes: number, idToken?: string): Promise<void> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;

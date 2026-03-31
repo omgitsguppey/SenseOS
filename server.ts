@@ -73,7 +73,7 @@ initializeApp(adminConfig);
 async function startServer() {
   const app = express();
   // Phase 15 Fix: Dynamic Injection inherited directly from Google Cloud App Hosting
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   // Phase 8: Hardened Security Pipeline
   app.use(helmet({

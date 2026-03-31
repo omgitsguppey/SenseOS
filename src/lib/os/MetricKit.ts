@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import firebaseConfig from '../../../firebase-applet-config.json';
 import { auth } from '../firebase/config';
+import { getAuthToken } from '../firebase/authUtils';
 
 // Phase 10: iOS MetricKit Native Daemon
 // Completely structurally isolated from User UI intent logging. Ensures performance isn't mixed with Machine Learning behaviors.
@@ -34,7 +35,7 @@ export const MetricKit = {
     metricQueue.length = 0;
 
     try {
-      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+      const idToken = await getAuthToken();
       const headers: any = { 'Content-Type': 'application/json' };
       if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
 

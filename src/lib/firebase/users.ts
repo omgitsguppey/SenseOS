@@ -1,6 +1,7 @@
 import { auth } from './config';
 import { UserRole } from '../telemetry/types';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { getAuthToken } from './authUtils';
 
 export interface UserProfile {
   uid: string;
@@ -17,7 +18,7 @@ export async function syncUserDocument(user: any, idToken?: string): Promise<Use
   if (!user) return null;
 
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) return null;
 
     const projectId = firebaseConfig.projectId;
@@ -52,7 +53,7 @@ export async function syncUserDocument(user: any, idToken?: string): Promise<Use
 
 export async function deleteAccount(uid: string, idToken?: string): Promise<void> {
   try {
-    const token = idToken || await auth.currentUser?.getIdToken();
+    const token = idToken || await getAuthToken();
     if (!token) throw new Error('Not authenticated');
 
     const projectId = firebaseConfig.projectId;

@@ -3,6 +3,7 @@ import { useAuthStore } from '../../store/auth';
 import { analytics, auth } from '../firebase/config';
 import { logEvent } from 'firebase/analytics';
 import firebaseConfig from '../../../firebase-applet-config.json';
+import { getAuthToken } from '../firebase/authUtils';
 
 // Layer 1: Tracking Engine
 // Handles raw event capture, sessionization, dedupe-safe IDs, and privacy-aware filtering.
@@ -95,7 +96,7 @@ export const TrackingEngine = {
 
     try {
       const projectId = firebaseConfig.projectId;
-      const idToken = await auth.currentUser?.getIdToken();
+      const idToken = await getAuthToken();
       const headers: any = {
         'Content-Type': 'application/json'
       };

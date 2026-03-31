@@ -5,6 +5,7 @@ import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 import { auth } from '../../../../lib/firebase/config';
 import firebaseConfig from '../../../../../firebase-applet-config.json';
+import { getAuthToken } from '../../../../lib/firebase/authUtils';
 
 export function IntelligenceView() {
   const { user, privacyConsent } = useAuthStore();
@@ -17,7 +18,7 @@ export function IntelligenceView() {
     async function fetchMemoryCount() {
       if (!user?.uid) return;
       try {
-        const idToken = await auth.currentUser?.getIdToken();
+        const idToken = await getAuthToken();
         if (!idToken) return;
         
         const projectId = firebaseConfig.projectId;

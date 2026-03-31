@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useAuthStore } from '../../store/auth';
 import firebaseConfig from '../../../firebase-applet-config.json';
 import { auth } from '../firebase/config';
+import { getAuthToken } from '../firebase/authUtils';
 
 // Phase 10: iOS Biome Architecture
 // Represents an explicit sequence of contextual parameters building the Pattern of Life Graph
@@ -62,7 +63,7 @@ export const Biome = {
     streamQueue.length = 0;
 
     try {
-      const idToken = auth.currentUser ? await auth.currentUser.getIdToken() : null;
+      const idToken = await getAuthToken();
       const headers: any = { 'Content-Type': 'application/json' };
       if (idToken) headers['Authorization'] = `Bearer ${idToken}`;
 

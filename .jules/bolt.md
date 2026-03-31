@@ -1,0 +1,3 @@
+## 2024-03-30 - Batch Concurrent Firebase Auth Token Requests
+**Learning:** Functions syncing data in the background (Telemetry, MetricKit, Biome) and other frequent API callers repeatedly invoked `await auth.currentUser?.getIdToken()`. Because this relies on network and I/O checks natively via Firebase SDK, running this concurrently across multiple isolated systems caused unnecessary performance overhead.
+**Action:** Implemented a shared 50ms in-memory caching mechanism (`getAuthToken` in `authUtils.ts`) and applied it globally. This batches concurrent `getIdToken()` requests, significantly reducing SDK overhead during initialization or high-frequency telemetry tracking.
