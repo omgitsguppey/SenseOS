@@ -12,8 +12,9 @@ interface AppWindowProps {
   process: Process;
 }
 
-export function AppWindow({ process }: AppWindowProps) {
-  const { backgroundApp } = useOSStore();
+// ⚡ Bolt: Wrap in React.memo and use targeted Zustand selector to prevent OS-wide re-renders
+export const AppWindow = React.memo(function AppWindow({ process }: AppWindowProps) {
+  const backgroundApp = useOSStore(state => state.backgroundApp);
   const app = apps.find(a => a.id === process.appId);
 
   // Phase 10: Biome AI Inter-App Stream Integration
@@ -83,4 +84,4 @@ export function AppWindow({ process }: AppWindowProps) {
       )}
     </motion.div>
   );
-}
+});

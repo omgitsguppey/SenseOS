@@ -38,7 +38,7 @@ export const useOSStore = create<OSState>((set, get) => ({
         processes: state.processes.map(p => 
           p.pid === existingProcess.pid 
             ? { ...p, status: 'foreground', zIndex: newZIndex, lastActiveAt: Date.now() }
-            : { ...p, status: 'background' }
+            : (p.status === 'background' ? p : { ...p, status: 'background' })
         ),
         topZIndex: newZIndex,
         activeAppId: appId
@@ -57,7 +57,7 @@ export const useOSStore = create<OSState>((set, get) => ({
       
       // Update store, throwing all others into the background natively
       set({
-        processes: [...state.processes.map(p => ({ ...p, status: 'background' as const })), newProcess],
+        processes: [...state.processes.map(p => (p.status === 'background' ? p : { ...p, status: 'background' as const })), newProcess],
         topZIndex: newZIndex,
         activeAppId: appId
       });
@@ -103,6 +103,12 @@ export const useOSStore = create<OSState>((set, get) => ({
   terminateApp: (pid) => {
     set((state) => {
       const updatedProcesses = state.processes.filter(p => p.pid !== pid);
+
+      // ⚡ Bolt: Prevent unnecessary React re-renders if the process wasn't found
+      if (updatedProcesses.length === state.processes.length) {
+        return state;
+      }
+
       // If we killed the active app, send user to HomeScreen
       const remainingForeground = updatedProcesses.find(p => p.status === 'foreground');
       return {
