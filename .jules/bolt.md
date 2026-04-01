@@ -1,0 +1,3 @@
+## 2025-03-31 - Memoizing Static Derivations in Animation Loops
+**Learning:** Components driving physics-based animations (like Framer Motion swipe gestures on the HomeScreen) trigger frequent re-renders (`setCurrentPage`, `setIsSwiping`). Deriving state from static config arrays (like `apps.filter()` or chunking into `pages`) directly in the render body causes massive unnecessary CPU overhead and garbage collection during every frame of an animation.
+**Action:** Always wrap static array mapping, filtering, or chunking inside `React.useMemo()` when the component contains high-frequency state updates, such as drag/swipe handlers.
