@@ -185,6 +185,7 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
             />
             {searchQuery && (
               <button 
+                aria-label="Clear search"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
                >
@@ -197,12 +198,13 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
         {/* Right Side: Account & Upload Actions */}
         <div className="flex items-center space-x-3 pointer-events-auto ml-2 flex-shrink-0">
           {user && (
-            <label className="bg-zinc-800/80 p-2.5 rounded-full cursor-pointer hover:bg-zinc-700/80 transition-colors backdrop-blur-xl active:scale-95 text-blue-400 shadow-sm">
+            <label aria-label="Upload media" className="bg-zinc-800/80 p-2.5 rounded-full cursor-pointer hover:bg-zinc-700/80 transition-colors backdrop-blur-xl active:scale-95 text-blue-400 shadow-sm">
               <Plus className="w-5 h-5" strokeWidth={2.5}/>
-              <input type="file" accept="image/*,video/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+              <input aria-label="Upload media file" type="file" accept="image/*,video/*" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
             </label>
           )}
           <button 
+            aria-label="View options"
             onClick={() => setShowOptionsModal(true)}
             className="bg-zinc-800/80 p-2.5 rounded-full cursor-pointer hover:bg-zinc-700/80 transition-colors backdrop-blur-xl active:scale-95 text-zinc-300 shadow-sm"
           >
