@@ -7,7 +7,11 @@ interface DockProps {
 }
 
 export function Dock({ onLaunchApp }: DockProps) {
-  const dockItems = dockApps.map(id => apps.find(a => a.id === id)!).filter(Boolean);
+  // ⚡ Bolt Performance Optimization:
+  // Memoize dockItems to prevent mapping/filtering on every render
+  const dockItems = React.useMemo(() =>
+    dockApps.map(id => apps.find(a => a.id === id)!).filter(Boolean),
+  []);
 
   return (
     <div className="absolute bottom-5 left-4 right-4 z-40 max-w-[420px] mx-auto">
