@@ -47,7 +47,7 @@ export const UploadStatus: React.FC<UploadStatusProps> = ({
             <div key={i} className="flex items-start space-x-3 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
               <span className="flex-1 leading-relaxed">{err}</span>
-              <button onClick={() => setErrors(e => e.filter((_, idx) => idx !== i))} className="p-1 hover:bg-red-500/20 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
+              <button aria-label="Dismiss error" onClick={() => setErrors(e => e.filter((_, idx) => idx !== i))} className="p-1 hover:bg-red-500/20 rounded-lg transition-colors"><X className="w-4 h-4" /></button>
             </div>
           ))}
         </motion.div>

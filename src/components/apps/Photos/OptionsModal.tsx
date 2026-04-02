@@ -41,14 +41,16 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
               <span className="text-sm font-semibold text-zinc-300">Grid Layout</span>
               <div className="flex items-center space-x-2 bg-zinc-900/50 rounded-full p-1">
                 <button
+                  aria-label="Zoom out grid"
                   onClick={() => setGridColumns(Math.min(5, gridColumns + 1))}
                   disabled={gridColumns >= 5}
                   className="p-1.5 rounded-full hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-medium w-4 text-center">{gridColumns}</span>
+                <span className="text-xs font-medium w-4 text-center" aria-hidden="true">{gridColumns}</span>
                 <button
+                  aria-label="Zoom in grid"
                   onClick={() => setGridColumns(Math.max(1, gridColumns - 1))}
                   disabled={gridColumns <= 1}
                   className="p-1.5 rounded-full hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
