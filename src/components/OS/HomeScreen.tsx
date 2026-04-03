@@ -11,18 +11,26 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onLaunchApp }: HomeScreenProps) {
-  const gridApps = apps.filter(app => !dockApps.includes(app.id));
-  
   const [currentPage, setCurrentPage] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const swipeTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const ITEMS_PER_PAGE = 24;
-  const pages = [];
-  for (let i = 0; i < gridApps.length; i += ITEMS_PER_PAGE) {
-    pages.push(gridApps.slice(i, i + ITEMS_PER_PAGE));
-  }
-  const totalPages = Math.max(pages.length, 2); // Force at least 2 pages for UI
+  // ⚡ Bolt: Memoize grid layout computation to prevent O(N) recalculations
+  // and array allocations on every swipe animation frame
+  const { pages, totalPages } = React.useMemo(() => {
+    const gridApps = apps.filter(app => !dockApps.includes(app.id));
+    const ITEMS_PER_PAGE = 24;
+    const computedPages = [];
+
+    for (let i = 0; i < gridApps.length; i += ITEMS_PER_PAGE) {
+      computedPages.push(gridApps.slice(i, i + ITEMS_PER_PAGE));
+    }
+
+    return {
+      pages: computedPages,
+      totalPages: Math.max(computedPages.length, 2) // Force at least 2 pages for UI
+    };
+  }, []);
 
   const handleDragStart = () => {
     setIsSwiping(true);
