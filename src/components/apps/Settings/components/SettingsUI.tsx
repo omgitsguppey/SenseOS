@@ -110,6 +110,9 @@ export function SettingsToggle({ icon, iconBg, label, checked, onChange }: Setti
         {label}
       </div>
       <button
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         onClick={handleToggle}
         className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out ml-2 ${
           checked ? 'bg-[#34C759]' : 'bg-[#39393D]'

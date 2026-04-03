@@ -85,6 +85,7 @@ export function HomeScreen({ onLaunchApp }: HomeScreenProps) {
       {/* Search Pill / Pagination Dots */}
       <div className="absolute bottom-[125px] left-1/2 -translate-x-1/2 z-30 h-8 flex items-center justify-center">
         <motion.button 
+          aria-label="Search or pagination dots"
           layout
           className="flex items-center justify-center bg-white/[0.15] backdrop-blur-xl border border-white/[0.08] shadow-sm rounded-full h-8 px-4"
           transition={{ type: "spring", stiffness: 400, damping: 30 }}

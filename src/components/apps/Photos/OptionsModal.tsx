@@ -41,6 +41,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
               <span className="text-sm font-semibold text-zinc-300">Grid Layout</span>
               <div className="flex items-center space-x-2 bg-zinc-900/50 rounded-full p-1">
                 <button
+                  aria-label="Decrease grid columns"
                   onClick={() => setGridColumns(Math.min(5, gridColumns + 1))}
                   disabled={gridColumns >= 5}
                   className="p-1.5 rounded-full hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
@@ -49,6 +50,7 @@ export const OptionsModal: React.FC<OptionsModalProps> = ({
                 </button>
                 <span className="text-xs font-medium w-4 text-center">{gridColumns}</span>
                 <button
+                  aria-label="Increase grid columns"
                   onClick={() => setGridColumns(Math.max(1, gridColumns - 1))}
                   disabled={gridColumns <= 1}
                   className="p-1.5 rounded-full hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"

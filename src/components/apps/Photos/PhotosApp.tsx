@@ -185,6 +185,7 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
             />
             {searchQuery && (
               <button 
+                aria-label="Clear search"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
                >
@@ -203,6 +204,7 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
             </label>
           )}
           <button 
+            aria-label="More options"
             onClick={() => setShowOptionsModal(true)}
             className="bg-zinc-800/80 p-2.5 rounded-full cursor-pointer hover:bg-zinc-700/80 transition-colors backdrop-blur-xl active:scale-95 text-zinc-300 shadow-sm"
           >
