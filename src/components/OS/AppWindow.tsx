@@ -56,6 +56,7 @@ export function AppWindow({ process }: AppWindowProps) {
           {/* App Header / Top Navigation */}
           <div className="h-14 flex items-center px-2 border-b border-white/10 bg-black/80 backdrop-blur-2xl z-10 rounded-t-[32px]">
             <button 
+              aria-label="Back to Home"
               onClick={() => backgroundApp(process.pid)}
               className="flex items-center text-blue-500 hover:text-blue-400 transition-colors px-2 py-1 rounded-lg active:opacity-70"
             >
