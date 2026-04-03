@@ -40,7 +40,7 @@ export function SettingsHome({ onNavigate }: SettingsHomeProps) {
         />
       </SettingsList>
 
-      {(role === 'admin' || user?.email === 'athenarosiejohnson@gmail.com') && (
+      {role === 'admin' && (
         <SettingsList title="Admin Control Center" footer="SenseOS Telemetry & Intelligence Engines">
           <SettingsRow
             icon={<Activity className="w-[20px] h-[20px] text-white" />}
