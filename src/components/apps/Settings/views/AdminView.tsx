@@ -19,7 +19,7 @@ export function AdminView() {
     // Only attempt to subscribe if we have a user and they are an admin, 
     // to prevent permission errors when using the debug role switcher.
     const { user, role } = useAuthStore.getState();
-    const isActualAdmin = role === 'admin' || user?.email === 'athenarosiejohnson@gmail.com';
+    const isActualAdmin = role === 'admin';
     
     if (!user || !isActualAdmin) {
       setLoading(false);
