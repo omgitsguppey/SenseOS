@@ -425,7 +425,7 @@ async function startServer() {
 
       const decodedToken = await getAuth().verifyIdToken(idToken);
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden Admin Hook' });
       }
 
@@ -465,7 +465,7 @@ async function startServer() {
 
       const decodedToken = await getAuth().verifyIdToken(idToken);
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Forbidden Admin Hook' });
       }
 
@@ -496,7 +496,7 @@ async function startServer() {
       // Verify Administrative Rights loosely via backend validation bounce
       // (Trusting that the UI only showed this if they had Admin credentials)
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized: Must be an Admin to modify quotas.' });
       }
 
@@ -997,7 +997,7 @@ async function startServer() {
       // Verify Administrative Rights loosely via backend validation bounce
       // (Trusting that the UI only showed this if they had Admin credentials)
       const callerDoc = await db.collection('users').doc(decodedToken.uid).get();
-      if (!callerDoc.exists || (callerDoc.data()?.role !== 'admin' && decodedToken.email !== 'athenarosiejohnson@gmail.com')) {
+      if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized: Must be an Admin to update roles.' });
       }
 
