@@ -66,6 +66,9 @@ export const useOSStore = create<OSState>((set, get) => ({
 
   backgroundApp: (pid) => {
     set((state) => {
+      const targetProcess = state.processes.find(p => p.pid === pid);
+      if (!targetProcess) return state; // Preserve referential equality if pid not found
+
       const updatedProcesses = state.processes.map(p => 
         p.pid === pid ? { ...p, status: 'background' as const, lastActiveAt: Date.now() } : p
       );
@@ -103,6 +106,7 @@ export const useOSStore = create<OSState>((set, get) => ({
   terminateApp: (pid) => {
     set((state) => {
       const updatedProcesses = state.processes.filter(p => p.pid !== pid);
+      if (updatedProcesses.length === state.processes.length) return state; // Preserve referential equality if no process was removed
       // If we killed the active app, send user to HomeScreen
       const remainingForeground = updatedProcesses.find(p => p.status === 'foreground');
       return {
