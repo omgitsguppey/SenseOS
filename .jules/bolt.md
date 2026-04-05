@@ -1,0 +1,3 @@
+## 2026-04-05 - Prevent Cascading Re-renders with Targeted Zustand Selectors
+**Learning:** Destructuring entire Zustand stores (e.g., `const { user } = useAuthStore();`) creates subscriptions to the *entire* store state, causing components to needlessly re-render whenever *any* unrelated state in the store changes. In a React application, especially at the root or in core providers like `AuthProvider` or `App.tsx`, this triggers massive application-wide re-renders.
+**Action:** Always use targeted selectors (e.g., `const user = useAuthStore(state => state.user);`) instead of destructuring the whole store. This limits re-renders strictly to changes in the specifically accessed property.

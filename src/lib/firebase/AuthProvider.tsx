@@ -7,7 +7,12 @@ import { syncPrivacyConsent, syncAppPreferences } from './settings';
 import { TrackingEngine } from '../os/Biome';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setUser, setRole, setConsent, setPreferences, checkPwaState } = useAuthStore();
+  const setUser = useAuthStore(state => state.setUser);
+  const setRole = useAuthStore(state => state.setRole);
+  const setConsent = useAuthStore(state => state.setConsent);
+  const setPreferences = useAuthStore(state => state.setPreferences);
+  const checkPwaState = useAuthStore(state => state.checkPwaState);
+
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {

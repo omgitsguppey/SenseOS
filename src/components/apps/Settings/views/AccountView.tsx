@@ -9,7 +9,9 @@ import { deleteAccount } from '../../../../lib/firebase/users';
 
 export function AccountView() {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { user, role, isPwaInstalled } = useAuthStore();
+  const user = useAuthStore(state => state.user);
+  const role = useAuthStore(state => state.role);
+  const isPwaInstalled = useAuthStore(state => state.isPwaInstalled);
 
   useEffect(() => {
     TrackingEngine.track('settings_section_view', 'settings', 'account');

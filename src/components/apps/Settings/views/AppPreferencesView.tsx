@@ -5,7 +5,8 @@ import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 
 export function AppPreferencesView() {
-  const { preferences, updatePreferences } = useAuthStore();
+  const preferences = useAuthStore(state => state.preferences);
+  const updatePreferences = useAuthStore(state => state.updatePreferences);
 
   useEffect(() => {
     TrackingEngine.track('settings_section_view', 'settings', 'preferences');
