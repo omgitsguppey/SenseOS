@@ -59,14 +59,24 @@ export function SettingsRow({ icon, iconBg = 'bg-blue-500', label, value, onClic
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <motion.div
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
       whileTap={isClickable ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
       onClick={handleClick}
-      className={`flex items-center min-h-[44px] px-4 py-2.5 ${isClickable ? 'cursor-pointer' : ''}`}
+      onKeyDown={handleKeyDown}
+      className={`flex items-center min-h-[44px] px-4 py-2.5 ${isClickable ? 'cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 focus-visible:outline-none' : ''}`}
     >
       {icon && (
-        <div className={`w-[28px] h-[28px] rounded-[6px] ${iconBg} flex items-center justify-center mr-4 flex-shrink-0`}>
+        <div aria-hidden="true" className={`w-[28px] h-[28px] rounded-[6px] ${iconBg} flex items-center justify-center mr-4 flex-shrink-0`}>
           {icon}
         </div>
       )}
@@ -102,7 +112,7 @@ export function SettingsToggle({ icon, iconBg, label, checked, onChange }: Setti
   return (
     <div className="flex items-center min-h-[44px] px-4 py-2.5">
       {icon && (
-        <div className={`w-[28px] h-[28px] rounded-[6px] ${iconBg} flex items-center justify-center mr-4 flex-shrink-0`}>
+        <div aria-hidden="true" className={`w-[28px] h-[28px] rounded-[6px] ${iconBg} flex items-center justify-center mr-4 flex-shrink-0`}>
           {icon}
         </div>
       )}
@@ -110,8 +120,11 @@ export function SettingsToggle({ icon, iconBg, label, checked, onChange }: Setti
         {label}
       </div>
       <button
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         onClick={handleToggle}
-        className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out ml-2 ${
+        className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out ml-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none ${
           checked ? 'bg-[#34C759]' : 'bg-[#39393D]'
         }`}
       >
