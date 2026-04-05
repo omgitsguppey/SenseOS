@@ -5,7 +5,8 @@ import { TrackingEngine } from '../../../../lib/os/Biome';
 import { useAuthStore } from '../../../../store/auth';
 
 export function PrivacyView() {
-  const { privacyConsent, updateConsent } = useAuthStore();
+  const privacyConsent = useAuthStore(state => state.privacyConsent);
+  const updateConsent = useAuthStore(state => state.updateConsent);
 
   useEffect(() => {
     TrackingEngine.track('settings_section_view', 'settings', 'privacy');

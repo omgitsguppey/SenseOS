@@ -9,7 +9,8 @@ const HomeScreen = React.lazy(() => import('./components/OS/HomeScreen').then(mo
 const AppWindow = React.lazy(() => import('./components/OS/AppWindow').then(module => ({ default: module.AppWindow })));
 
 export default function App() {
-  const { processes, launchApp } = useOSStore();
+  const processes = useOSStore(state => state.processes);
+  const launchApp = useOSStore(state => state.launchApp);
 
   useEffect(() => {
     // Phase 6 Virtual RAM GC Watchdog

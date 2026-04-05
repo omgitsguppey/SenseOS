@@ -9,7 +9,9 @@ interface SettingsHomeProps {
 }
 
 export function SettingsHome({ onNavigate }: SettingsHomeProps) {
-  const { role, setRole, user } = useAuthStore();
+  const role = useAuthStore(state => state.role);
+  const setRole = useAuthStore(state => state.setRole);
+  const user = useAuthStore(state => state.user);
 
   return (
     <div className="p-4 pt-6 max-w-[600px] mx-auto">

@@ -7,7 +7,8 @@ import { auth } from '../../../../lib/firebase/config';
 import firebaseConfig from '../../../../../firebase-applet-config.json';
 
 export function IntelligenceView() {
-  const { user, privacyConsent } = useAuthStore();
+  const user = useAuthStore(state => state.user);
+  const privacyConsent = useAuthStore(state => state.privacyConsent);
   const [memoryCount, setMemoryCount] = useState<number | null>(null);
   const [modelStatus, setModelStatus] = useState<{ model: string, status: string }>({ model: 'Pending Vertex...', status: 'Offline' });
 

@@ -13,7 +13,7 @@ interface AppWindowProps {
 }
 
 export function AppWindow({ process }: AppWindowProps) {
-  const { backgroundApp } = useOSStore();
+  const backgroundApp = useOSStore(state => state.backgroundApp);
   const app = apps.find(a => a.id === process.appId);
 
   // Phase 10: Biome AI Inter-App Stream Integration
