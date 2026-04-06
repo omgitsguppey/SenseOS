@@ -89,8 +89,23 @@ export function AdminView() {
   };
 
   // Calculate some basic stats from recent events
-  const uniqueUsers = new Set(events.map(e => e.user_id)).size;
-  const errorEvents = events.filter(e => e.event_name?.includes('error')).length;
+  const { uniqueUsers, errorEvents } = useMemo(() => {
+    let errorCount = 0;
+    const userSet = new Set();
+
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      userSet.add(event.user_id);
+      if (event.event_name?.includes('error')) {
+        errorCount++;
+      }
+    }
+
+    return {
+      uniqueUsers: userSet.size,
+      errorEvents: errorCount
+    };
+  }, [events]);
 
   return (
     <div className="p-4 pt-6 max-w-[600px] mx-auto">
