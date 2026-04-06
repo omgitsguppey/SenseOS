@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Image, Search, Plus, Loader2, AlertCircle, X, ChevronLeft, User, Heart, Folder, Calendar, MapPin, MoreHorizontal, ZoomIn, ZoomOut, Check } from 'lucide-react';
+import { Image, Search, Plus, Loader2, X, ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { useAuthStore } from '../../../store/auth';
 import { uploadMedia, subscribeToMedia, MediaMetadata } from '../../../lib/firebase/media';
 import { db } from '../../../lib/firebase/config';
@@ -12,7 +12,6 @@ import { UploadStatus } from './UploadStatus';
 import { Collections } from './Collections';
 import { extractSemanticTags } from '../../../lib/ai/vision';
 import { Biome } from '../../../lib/os/Biome';
-import { MetricKit } from '../../../lib/os/MetricKit';
 
 export interface PhotosAppProps {
   onClose: () => void;
