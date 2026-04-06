@@ -1,0 +1,3 @@
+## 2024-05-18 - Settings UI Keyboard Accessibility
+**Learning:** Custom interactive elements like custom switches (`<button>` styling) and clickable rows (`<motion.div>`) in the Settings UI component lack implicit semantic roles and keyboard handling compared to native elements. Specifically, users relying on keyboard navigation cannot activate clickable `SettingsRow` components using `Enter` or `Space`, and screen readers do not recognize the `SettingsToggle` as a switch.
+**Action:** When building custom interactive components, always explicitly add appropriate `role` attributes (e.g., `role="switch"`, `role="button"`), ARIA states (`aria-checked`), and handle keyboard events (e.g., `onKeyDown` for `Enter`/`Space`) to ensure parity with native element accessibility.

@@ -63,7 +63,15 @@ export function SettingsRow({ icon, iconBg = 'bg-blue-500', label, value, onClic
     <motion.div
       whileTap={isClickable ? { backgroundColor: 'rgba(255,255,255,0.1)' } : {}}
       onClick={handleClick}
-      className={`flex items-center min-h-[44px] px-4 py-2.5 ${isClickable ? 'cursor-pointer' : ''}`}
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      className={`flex items-center min-h-[44px] px-4 py-2.5 outline-none ${isClickable ? 'cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg' : ''}`}
     >
       {icon && (
         <div className={`w-[28px] h-[28px] rounded-[6px] ${iconBg} flex items-center justify-center mr-4 flex-shrink-0`}>
@@ -110,8 +118,11 @@ export function SettingsToggle({ icon, iconBg, label, checked, onChange }: Setti
         {label}
       </div>
       <button
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
         onClick={handleToggle}
-        className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out ml-2 ${
+        className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors duration-300 ease-in-out ml-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
           checked ? 'bg-[#34C759]' : 'bg-[#39393D]'
         }`}
       >
