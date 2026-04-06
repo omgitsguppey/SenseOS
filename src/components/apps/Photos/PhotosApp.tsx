@@ -24,7 +24,7 @@ export function PhotosApp({ onClose }: PhotosAppProps) {
   const [justUploaded, setJustUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<string[]>([]);
-  const { user } = useAuthStore();
+  const user = useAuthStore(state => state.user);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Unified Scroll State
